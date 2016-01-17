@@ -1,0 +1,11 @@
+# Mac finder artifacts
+.DS_Store
+
+# RubyMine project files
+.idea
+
+# SimpleCov coverage files
+coverage
+
+# Gemfile.lock
+Gemfile.lock
