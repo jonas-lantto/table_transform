@@ -21,14 +21,7 @@ class Store
     row = []
     @columns.each do |col|
       value = hash_values[col.downcase.to_sym]
-      row << case col.downcase.to_sym
-               when :severity
-                 value.to_s.capitalize
-               when :category
-                 value || 'Internal'
-               else
-                 value || ''
-             end
+      row << (value || '')
     end
     row
   end

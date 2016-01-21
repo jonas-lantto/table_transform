@@ -8,11 +8,11 @@ class StoreTest < Minitest::Test
 
     s << {severity: :alarm, category: 'External'}
     assert_equal(2, s.to_a.count)
-    assert_equal(%w(Alarm External), s.to_a.last[0..1])
+    assert_equal([:alarm, 'External'], s.to_a.last[0..1])
 
     s << {severity: :warning}
     assert_equal(3, s.to_a.count)
-    assert_equal(%w(Warning Internal), s.to_a.last[0..1], 'Default category test')
+    assert_equal([:warning, ''], s.to_a.last[0..1], "Default default value ''")
   end
 
   def test_partition
