@@ -1,18 +1,19 @@
 class Store
-  def initialize(columns)
+  def initialize(columns, partition_symbol = nil)
     @columns = columns
+    @partition_symbol = partition_symbol
     @store = Hash.new {|h,k| h[k] = [] }
   end
 
   def << (hash_values)
-    @store[hash_values[:partition] || :default] << create_row(hash_values)
+    @store[hash_values[@partition_symbol]] << create_row(hash_values)
   end
 
   def to_a
     @store.values.reduce([@columns], :+)
   end
 
-  def partition(partition = :default)
+  def partition(partition = nil)
     [@columns] + @store[partition]
   end
 
