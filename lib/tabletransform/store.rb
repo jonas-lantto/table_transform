@@ -1,6 +1,6 @@
 class Store
-  def initialize
-    @columns = %w(Severity Category Reason Module ModuleType Note)
+  def initialize(columns)
+    @columns = columns
     @store = Hash.new {|h,k| h[k] = [] }
   end
 
