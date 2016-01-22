@@ -26,6 +26,11 @@ class StoreTest < Minitest::Test
     s << {severity: :warning, dummy: 'DummyValue'}
     assert_equal(5, s.to_a.count)
     assert_equal([:warning, ''], s.to_a.last, "Default default value ''")
+
+    # streaming can be chained
+    s << {severity: :normal, category: 'T1'} << {severity: :normal, category: 'T2'}
+    assert_equal(7, s.to_a.count)
+    assert_equal([[:normal, 'T1'], [:normal, 'T2']], s.to_a[-2,2])
   end
 
   def test_partition

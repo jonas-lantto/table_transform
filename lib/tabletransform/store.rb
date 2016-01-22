@@ -7,6 +7,7 @@ class Store
 
   def << (hash_values)
     @store[hash_values[@partition_symbol]] << create_row(hash_values)
+    self
   end
 
   def to_a
