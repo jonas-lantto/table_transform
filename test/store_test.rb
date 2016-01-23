@@ -1,3 +1,4 @@
+require 'benchmark'
 require 'minitest/autorun'
 require 'tabletransform/store'
 
@@ -42,4 +43,20 @@ class StoreTest < Minitest::Test
     assert_equal(2, s.partition(:ext).count, 'Header and row')
     assert_equal(1, s.partition(:unknown).count, 'Header only')
   end
+
+  def test_performance
+    s = Store.new(%w(Severity Category A B C D E F))
+    data = {severity: :alarm, category: 'External'}
+    data = {}
+    n = 500_000
+    time = Benchmark.realtime {
+      n.times do
+        s << data
+      end
+    }
+
+    puts n / time
+
+  end
 end
+

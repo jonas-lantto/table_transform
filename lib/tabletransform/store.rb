@@ -1,6 +1,7 @@
 class Store
   def initialize(columns, partition_symbol = nil)
     @columns = columns
+    @col_sym = columns.map { |x| x.downcase.to_sym }
     @partition_symbol = partition_symbol
     @store = Hash.new {|h,k| h[k] = [] }
   end
@@ -19,13 +20,8 @@ class Store
   end
 
   private
-  def create_row(hash_values)
-    row = []
-    @columns.each do |col|
-      value = hash_values[col.downcase.to_sym]
-      row << (value || '')
+    def create_row(hash_values)
+      @col_sym.inject([]) { |row, col| row << (hash_values[col] || '') }
     end
-    row
-  end
 
 end
