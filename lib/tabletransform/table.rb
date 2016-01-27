@@ -17,10 +17,21 @@ module TableTransform
       Table.new(rows)
     end
 
+    def self.create_empty(header)
+      raise 'Table header need to be array' unless header.is_a? Array
+      raise 'Table, No header defined' if header.empty?
+      Table.new([header])
+    end
+
     def initialize(rows)
       @data_rows = rows.clone
       @header = @data_rows.shift
       @column_indexes = create_column_name_binding(@header)
+    end
+
+    def << (hash_values)
+      @data_rows << create_row(hash_values)
+      self
     end
 
     def each_row
@@ -29,9 +40,22 @@ module TableTransform
       }
     end
 
+    # @returns array of data arrays including header row
     def to_a
       res = @data_rows.clone
       res.unshift @header
+    end
+
+    # @returns new table with specified columns specified in given header
+    def extract(header)
+      selected_cols = header.inject([]) { |res, c| res << Util::get_col_index(c, @column_indexes) }
+      Table.new( @data_rows.inject([header]) {|res, row| (res << row.values_at(*selected_cols))} )
+    end
+
+    # @returns new table with rows that match given value in given column_name
+    def filter(column_name, value)
+      filter_column = Util::get_col_index(column_name.to_s, @column_indexes)
+      Table.new( @data_rows.select {|row| row[filter_column] == value}.unshift @header )
     end
 
     #adds a column with given name to the far right of the table
@@ -76,12 +100,14 @@ module TableTransform
     end
 
     private
-    def create_column_name_binding(header_row)
-      cols = Hash.new
-      header_row.each_with_index { |x, index | cols[x.downcase] = index }
-      cols
-    end
+      def create_column_name_binding(header_row)
+        cols = Hash.new
+        header_row.each_with_index { |x, index | cols[x.downcase] = index }
+        cols
+      end
 
+      def create_row(hash_values)
+        @header.inject([]) { |row, col| row << (hash_values[col.downcase.to_sym] || '') }
+      end
   end
-
 end

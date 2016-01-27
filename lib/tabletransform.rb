@@ -1,5 +1,4 @@
 require "tabletransform/version"
-require "tabletransform/store"
 require "tabletransform/table"
 
 module Tabletransform
