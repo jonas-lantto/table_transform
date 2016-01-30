@@ -95,6 +95,26 @@ class TableTest < Minitest::Test
     assert_equal("No column with name 'xxx' exists", e.to_s)
   end
 
+  def test_op_plus
+    #vanilla
+    t1 = TableTransform::Table.create_empty(%w(Name Age Length))
+    t1 << {name: 'Joe',  age: 20, length: 170}
+
+    t2 = TableTransform::Table.create_empty(%w(Name Age Length))
+    t2 << {name: 'Jane', age: 45, length: 172}
+
+    assert_equal([%w(Name Age Length),
+                  ['Joe', 20, 170],
+                  ['Jane', 45, 172]],
+                 (t1 + t2).to_a)
+
+    #header mismatch
+    t1 = TableTransform::Table.create_empty(%w(Name Age Length))
+    t1 = TableTransform::Table.create_empty(%w(Name Length Age))
+    e = assert_raises{ t1 + t2 }
+    assert_equal('Tables cannot be added due to header mismatch', e.to_s)
+  end
+
   def bench_extract
     # t = TableTransform::Table.create_empty(['Name', 'Age', 'Length'])
     # n = 100_000

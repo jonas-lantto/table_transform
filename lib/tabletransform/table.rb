@@ -34,6 +34,15 @@ module TableTransform
       self
     end
 
+    # Add two tables
+    # @throws if header do not match
+    def +(table)
+      t2 = table.to_a
+      t2_header = t2.shift
+      raise 'Tables cannot be added due to header mismatch' if @header != t2_header
+      TableTransform::Table.new(self.to_a + t2)
+    end
+
     def each_row
       @data_rows.each{|x|
         yield Row.new(@column_indexes, x)
