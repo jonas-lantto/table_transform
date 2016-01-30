@@ -6,8 +6,8 @@ class TableTest < Minitest::Test
 
   def test_table
     data = [
-        ['Name',  'Age'],
-        ['Jane',  '22'],
+        %w(Name Age),
+        %w(Jane 22),
         ['Joe',   nil]
     ]
     t = TableTransform::Table.new(data)
@@ -30,7 +30,7 @@ class TableTest < Minitest::Test
 
   def test_create_empty
     # vanilla - success
-    t = TableTransform::Table.create_empty(['Col1', 'Col2'])
+    t = TableTransform::Table.create_empty(%w(Col1 Col2))
     assert_equal([%w(Col1 Col2)], t.to_a)
 
     # non-array header
@@ -45,7 +45,7 @@ class TableTest < Minitest::Test
 
     # Array have to be > 0 in size
     e = assert_raises{ TableTransform::Table.create_empty([]) }
-    assert_equal("Table, No header defined", e.to_s)
+    assert_equal('Table, No header defined', e.to_s)
 
   end
 
@@ -110,7 +110,7 @@ class TableTest < Minitest::Test
 
     #header mismatch
     t1 = TableTransform::Table.create_empty(%w(Name Age Length))
-    t1 = TableTransform::Table.create_empty(%w(Name Length Age))
+    t2 = TableTransform::Table.create_empty(%w(Name Length Age))
     e = assert_raises{ t1 + t2 }
     assert_equal('Tables cannot be added due to header mismatch', e.to_s)
   end
@@ -127,8 +127,8 @@ class TableTest < Minitest::Test
 
   def test_add_column
     data = [
-        ['Name',  'Age'],
-        ['Jane',  '22'],
+        %w(Name Age),
+        %w(Jane 22),
         ['Joe',   nil]
     ]
     t = TableTransform::Table.new(data)
@@ -143,8 +143,8 @@ class TableTest < Minitest::Test
 
   def test_change_column
     data = [
-        ['Name',  'Age'],
-        ['Jane',  '22'],
+        %w(Name Age),
+        %w(Jane 22),
         ['Joe',   nil]
     ]
     t = TableTransform::Table.new(data)
@@ -152,7 +152,7 @@ class TableTest < Minitest::Test
     assert_kind_of(TableTransform::Table, result)
 
     data_target = [
-        ['Name',  'Age'],
+        %w(Name Age),
         ['Jane',  44],
         ['Joe',   nil]
     ]
@@ -162,7 +162,7 @@ class TableTest < Minitest::Test
     t.each_row{|r| ages << r['Age']}
     assert_equal([(22 * 2).to_s, ''], ages)
 
-    e = assert_raises{ t.change_column('xxx'){|x| 'xxx'} }
+    e = assert_raises{ t.change_column('xxx'){ 'xxx'} }
     assert_equal("No column with name 'xxx' exists", e.to_s)
   end
 
@@ -181,7 +181,7 @@ class TableTest < Minitest::Test
   end
 
   def test_streaming_of_new_row
-    t = TableTransform::Table.create_empty(['Severity',  'Category'])
+    t = TableTransform::Table.create_empty(%w(Severity Category))
 
     # Vanilla insert
     t << {severity: :alarm, category: 'External'}

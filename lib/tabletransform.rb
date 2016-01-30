@@ -1,6 +1,3 @@
-require "tabletransform/version"
-require "tabletransform/table"
+require 'tabletransform/version'
+require 'tabletransform/table'
 
-module Tabletransform
-  # Your code goes here...
-end
