@@ -166,6 +166,18 @@ class TableTest < Minitest::Test
     assert_equal("No column with name 'xxx' exists", e.to_s)
   end
 
+  def test_delete_column
+    t_orig = TableTransform::Table.create_empty(%w(Name Age Length))
+    t_orig << {name: 'Joe',  age: 20, length: 170}
+    t_orig << {name: 'Jane', age: 45, length: 172}
+
+    t_orig.delete_column('Age')
+    assert_equal([%w(Name Length),
+                  ['Joe', 170],
+                  ['Jane', 172]],
+                 t_orig.to_a)
+  end
+
   def test_cell
     assert_equal('aaa', TableTransform::Table::Cell.new('aaa'))
     assert_equal('', TableTransform::Table::Cell.new)

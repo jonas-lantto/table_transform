@@ -85,6 +85,14 @@ module TableTransform
       self # enable chaining
     end
 
+    def delete_column(name)
+      @header.delete(name)
+      selected_cols = @header.inject([]) { |res, c| res << Util::get_col_index(c, @column_indexes) }
+      @data_rows.map!{|row| row.values_at(*selected_cols)}
+      @column_indexes = create_column_name_binding(@header)
+      self
+    end
+
     class Row
 
       def initialize(cols, row)
