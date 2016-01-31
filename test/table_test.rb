@@ -181,12 +181,14 @@ class TableTest < Minitest::Test
     t2 = TableTransform::Table.create_empty(%w(Name Age Length Address))
     t2 << {name: 'Joe',  age: 20, length: 170, address:'home'}
     t2 << {name: 'Jane', age: 45, length: 172, address:'away'}
-    t2.delete_column('Name', 'Address')
+    t2.delete_column(:name, :address)
     assert_equal([%w(Age Length),
                   [20, 170],
                   [45, 172]],
                  t2.to_a)
 
+    e = assert_raises{ t2.delete_column('xxx') }
+    assert_equal("No column with name 'xxx' exists", e.to_s)
   end
 
   def test_cell

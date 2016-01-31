@@ -86,9 +86,13 @@ module TableTransform
     end
 
     def delete_column(*names)
-      names.each{|name| @header.delete(name)}
+      delete_indexes = names.inject([]){|res, n| res << Util::get_col_index(n.to_s, @column_indexes)}
+      delete_indexes.sort!.reverse!
+      delete_indexes.each{|i| @header.delete_at(i)}
+
       selected_cols = @header.inject([]) { |res, c| res << Util::get_col_index(c, @column_indexes) }
       @data_rows.map!{|row| row.values_at(*selected_cols)}
+
       @column_indexes = create_column_name_binding(@header)
       self
     end
