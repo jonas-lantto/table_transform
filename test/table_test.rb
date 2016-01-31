@@ -134,7 +134,7 @@ class TableTest < Minitest::Test
     t = TableTransform::Table.new(data)
 
     result = t.add_column('NameLength'){|row| row['Name'].size}
-    assert_kind_of(TableTransform::Table, result)
+    assert_kind_of(TableTransform::Table, result, 'Self chaining')
     assert_equal('NameLength', t.to_a[0][2])
     assert_equal(4, t.to_a[1][2])
 
@@ -149,7 +149,7 @@ class TableTest < Minitest::Test
     ]
     t = TableTransform::Table.new(data)
     result = t.change_column('Age'){|row| row['Age'].to_i * 2 unless row['Age'].empty?}
-    assert_kind_of(TableTransform::Table, result)
+    assert_kind_of(TableTransform::Table, result, 'Self chaining')
 
     data_target = [
         %w(Name Age),
@@ -171,7 +171,8 @@ class TableTest < Minitest::Test
     t_orig << {name: 'Joe',  age: 20, length: 170}
     t_orig << {name: 'Jane', age: 45, length: 172}
 
-    t_orig.delete_column('Age')
+    result = t_orig.delete_column('Age')
+    assert_kind_of(TableTransform::Table, result, 'Self chaining')
     assert_equal([%w(Name Length),
                   ['Joe', 170],
                   ['Jane', 172]],
