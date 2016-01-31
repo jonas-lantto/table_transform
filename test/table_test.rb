@@ -167,16 +167,26 @@ class TableTest < Minitest::Test
   end
 
   def test_delete_column
-    t_orig = TableTransform::Table.create_empty(%w(Name Age Length))
-    t_orig << {name: 'Joe',  age: 20, length: 170}
-    t_orig << {name: 'Jane', age: 45, length: 172}
+    t = TableTransform::Table.create_empty(%w(Name Age Length))
+    t << {name: 'Joe',  age: 20, length: 170}
+    t << {name: 'Jane', age: 45, length: 172}
 
-    result = t_orig.delete_column('Age')
+    result = t.delete_column('Age')
     assert_kind_of(TableTransform::Table, result, 'Self chaining')
     assert_equal([%w(Name Length),
                   ['Joe', 170],
                   ['Jane', 172]],
-                 t_orig.to_a)
+                 t.to_a)
+
+    t2 = TableTransform::Table.create_empty(%w(Name Age Length Address))
+    t2 << {name: 'Joe',  age: 20, length: 170, address:'home'}
+    t2 << {name: 'Jane', age: 45, length: 172, address:'away'}
+    t2.delete_column('Name', 'Address')
+    assert_equal([%w(Age Length),
+                  [20, 170],
+                  [45, 172]],
+                 t2.to_a)
+
   end
 
   def test_cell
