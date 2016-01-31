@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'tabletransform/version'
+require 'table_transform/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = 'tabletransform'
-  spec.version       = Tabletransform::VERSION
+  spec.name          = 'table_transform'
+  spec.version       = TableTransform::VERSION
   spec.authors       = ['Jonas Lantto']
   spec.email         = ['j@lantto.net']
 

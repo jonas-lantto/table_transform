@@ -1,5 +1,5 @@
 require 'minitest/autorun'
-require 'tabletransform/table'
+require 'table_transform/table'
 
 
 class TableTest < Minitest::Test
