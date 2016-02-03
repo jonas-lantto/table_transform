@@ -64,7 +64,7 @@ module TableTransform
     # @returns new table with rows that match given value in given column_name
     def filter(column_name, value)
       filter_column = Util::get_col_index(column_name.to_s, @column_indexes)
-      Table.new( @data_rows.select {|row| row[filter_column] == value}.unshift @header )
+      Table.new( @data_rows.select {|row| row[filter_column] == value}.unshift @header.clone )
     end
 
     #adds a column with given name to the far right of the table

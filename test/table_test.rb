@@ -93,6 +93,16 @@ class TableTest < Minitest::Test
     # Columns must exist
     e = assert_raises{ t_orig.filter(:xxx, 20) }
     assert_equal("No column with name 'xxx' exists", e.to_s)
+
+    # Non destructive
+    data_target = [
+        %w(Name Age),
+        ['Jane',  44],
+        ['Joe',   nil]
+    ]
+    t = TableTransform::Table.new(Marshal.load( Marshal.dump(data_target) ))
+    t2 = t.filter(:age, 20).delete_column(:age)
+    assert_equal(data_target, t.to_a)
   end
 
   def test_op_plus
