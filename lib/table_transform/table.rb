@@ -3,8 +3,8 @@ require 'csv'
 module TableTransform
   module Util
     def self.get_col_index(col_name, data)
-      pos = data[col_name.downcase]
-      raise "No column with name '#{col_name.downcase}' exists" if pos.nil?
+      pos = data[col_name]
+      raise "No column with name '#{col_name}' exists" if pos.nil?
       pos
     end
   end
@@ -63,7 +63,7 @@ module TableTransform
 
     # @returns new table with rows that match given value in given column_name
     def filter(column_name, value)
-      filter_column = Util::get_col_index(column_name.to_s, @column_indexes)
+      filter_column = Util::get_col_index(column_name, @column_indexes)
       Table.new( @data_rows.select {|row| row[filter_column] == value}.unshift @header.clone )
     end
 
@@ -73,7 +73,7 @@ module TableTransform
       @data_rows.each{|x|
         x << (yield Row.new(@column_indexes, x))
       }
-      @column_indexes[name.downcase] = @column_indexes.size
+      @column_indexes[name] = @column_indexes.size
       self # enable chaining
     end
 
@@ -86,7 +86,7 @@ module TableTransform
     end
 
     def delete_column(*names)
-      delete_indexes = names.inject([]){|res, n| res << Util::get_col_index(n.to_s, @column_indexes)}
+      delete_indexes = names.inject([]){|res, n| res << Util::get_col_index(n, @column_indexes)}
       delete_indexes.sort!.reverse!
       delete_indexes.each{|i| @header.delete_at(i)}
 
@@ -123,12 +123,12 @@ module TableTransform
     private
       def create_column_name_binding(header_row)
         cols = Hash.new
-        header_row.each_with_index { |x, index | cols[x.downcase] = index }
+        header_row.each_with_index { |x, index | cols[x] = index }
         cols
       end
 
       def create_row(hash_values)
-        @header.inject([]) { |row, col| row << (hash_values[col.downcase.to_sym] || '') }
+        @header.inject([]) { |row, col| row << (hash_values[col] || '') }
       end
   end
 end

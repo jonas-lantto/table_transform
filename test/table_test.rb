@@ -51,8 +51,8 @@ class TableTest < Minitest::Test
 
   def test_extract
     t = TableTransform::Table.create_empty(%w(Name Age Length))
-    t << {name: 'Joe',  age: 20, length: 170}
-    t << {name: 'Jane', age: 45, length: 172}
+    t << {'Name' => 'Joe',  'Age' => 20, 'Length' => 170}
+    t << {'Name' => 'Jane', 'Age' => 45, 'Length' => 172}
 
     t2 = t.extract(%w(Length Name))
     assert_kind_of(TableTransform::Table, t2)
@@ -69,29 +69,29 @@ class TableTest < Minitest::Test
 
   def test_filter
     t_orig = TableTransform::Table.create_empty(%w(Name Age Length))
-    t_orig << {name: 'Joe',  age: 20, length: 170}
-    t_orig << {name: 'Jane', age: 45, length: 172}
-    t_orig << {name: 'Anna', age: 20, length: 165}
+    t_orig << {'Name' => 'Joe',  'Age' => 20, 'Length' => 170}
+    t_orig << {'Name' => 'Jane', 'Age' => 45, 'Length' => 172}
+    t_orig << {'Name' => 'Anna', 'Age' => 20, 'Length' => 165}
 
-    t2 = t_orig.filter(:age, 20)
+    t2 = t_orig.filter('Age', 20)
     assert_kind_of(TableTransform::Table, t2)
     assert_equal(3, t2.to_a.size, 'Header row + filtered rows')
     assert( not(t2.to_a.flatten.include? ('Jane')), 'Value should be filtered out')
     assert_equal('Anna', t2.to_a.last[0], 'Row order and type preserved')
     assert_equal(165,    t2.to_a.last[2], 'Row order and type preserved')
 
-    t2 = t_orig.filter(:age, 70)
+    t2 = t_orig.filter('Age', 70)
     assert_equal(1, t2.to_a.size, 'Header row only')
 
     # Chain filter and extract
-    t2 = t_orig.filter(:age, 45).extract(%w(name))
+    t2 = t_orig.filter('Age', 45).extract(%w(Name))
     assert_kind_of(TableTransform::Table, t2)
     assert_equal(2, t2.to_a.size, 'Header row + filtered row')
     assert_equal(1, t2.to_a.last.size, 'Only one column')
     assert_equal('Jane', t2.to_a.last[0])
 
     # Columns must exist
-    e = assert_raises{ t_orig.filter(:xxx, 20) }
+    e = assert_raises{ t_orig.filter('xxx', 20) }
     assert_equal("No column with name 'xxx' exists", e.to_s)
 
     # Non destructive
@@ -101,17 +101,17 @@ class TableTest < Minitest::Test
         ['Joe',   nil]
     ]
     t = TableTransform::Table.new(Marshal.load( Marshal.dump(data_target) ))
-    t2 = t.filter(:age, 20).delete_column(:age)
+    t2 = t.filter('Age', 20).delete_column('Age')
     assert_equal(data_target, t.to_a)
   end
 
   def test_op_plus
     #vanilla
     t1 = TableTransform::Table.create_empty(%w(Name Age Length))
-    t1 << {name: 'Joe',  age: 20, length: 170}
+    t1 << {'Name' => 'Joe',  'Age' => 20, 'Length' => 170}
 
     t2 = TableTransform::Table.create_empty(%w(Name Age Length))
-    t2 << {name: 'Jane', age: 45, length: 172}
+    t2 << {'Name' => 'Jane',  'Age' => 45, 'Length' => 172}
 
     assert_equal([%w(Name Age Length),
                   ['Joe', 20, 170],
@@ -178,8 +178,8 @@ class TableTest < Minitest::Test
 
   def test_delete_column
     t = TableTransform::Table.create_empty(%w(Name Age Length))
-    t << {name: 'Joe',  age: 20, length: 170}
-    t << {name: 'Jane', age: 45, length: 172}
+    t << {'Name' => 'Joe',  'Age' => 20, 'Length' => 170}
+    t << {'Name' => 'Jane', 'Age' => 45, 'Length' => 172}
 
     result = t.delete_column('Age')
     assert_kind_of(TableTransform::Table, result, 'Self chaining')
@@ -189,9 +189,10 @@ class TableTest < Minitest::Test
                  t.to_a)
 
     t2 = TableTransform::Table.create_empty(%w(Name Age Length Address))
-    t2 << {name: 'Joe',  age: 20, length: 170, address:'home'}
-    t2 << {name: 'Jane', age: 45, length: 172, address:'away'}
-    t2.delete_column(:name, :address)
+    t2 << {'Name' => 'Joe',  'Age' => 20, 'Length' => 170, 'Address' => 'home'}
+    t2 << {'Name' => 'Jane', 'Age' => 45, 'Length' => 172, 'Address' => 'away'}
+
+    t2.delete_column('Name', 'Address')
     assert_equal([%w(Age Length),
                   [20, 170],
                   [45, 172]],
@@ -219,27 +220,27 @@ class TableTest < Minitest::Test
     t = TableTransform::Table.create_empty(%w(Severity Category))
 
     # Vanilla insert
-    t << {severity: :alarm, category: 'External'}
+    t << {'Severity' => :alarm, 'Category' => 'External'}
     assert_equal(2, t.to_a.count)
     assert_equal([:alarm, 'External'], t.to_a.last)
 
     # Vanilla insert reversed order
-    t << {category: 'External', severity: :alarm}
+    t << {'Category' => 'External', 'Severity' => :alarm}
     assert_equal(3, t.to_a.count)
     assert_equal([:alarm, 'External'], t.to_a.last)
 
     # default value of hash key is missing
-    t << {severity: :warning}
+    t << {'Severity' => :warning}
     assert_equal(4, t.to_a.count)
     assert_equal([:warning, ''], t.to_a.last, "Default default value ''")
 
     # streamed values not in specified output columns will not be added
-    t << {severity: :warning, dummy: 'DummyValue'}
+    t << {'Severity' => :warning, 'Dummy' => 'DummyValue'}
     assert_equal(5, t.to_a.count)
     assert_equal([:warning, ''], t.to_a.last, "Default default value ''")
 
     # streaming can be chained
-    t << {severity: :normal, category: 'T1'} << {severity: :normal, category: 'T2'}
+    t << {'Severity' => :normal, 'Category' => 'T1'} << {'Severity' => :normal, 'Category' => 'T2'}
     assert_equal(7, t.to_a.count)
     assert_equal([[:normal, 'T1'], [:normal, 'T2']], t.to_a[-2,2])
 
