@@ -4,34 +4,28 @@ require 'table_transform/table'
 
 class TableTest < Minitest::Test
 
-  def test_table
+  def test_initialize
     data = [
         %w(Name Age),
-        %w(Jane 22),
-        ['Joe',   nil]
+        %w(Jane 22)
     ]
-    t = TableTransform::Table.new(data)
 
-    assert_equal(data, t.to_a)
+    # successful creation
+    TableTransform::Table.new(data)
+    assert_equal(data, data.to_a)
 
-    rows = Array.new
-    t.each_row{|r| rows << r}
+    #too many elements in data row
+    d2 = data.clone
+    d2 << %w(Jane 22 AA)
+    e = assert_raises{ TableTransform::Table.new(d2) }
+    assert_equal('Column size mismatch. On row 2. Size 3 expected to be 2', e.to_s)
 
-    assert_equal(2, rows.size)
-    assert_equal(rows[0].class, TableTransform::Table::Row)
-    assert_equal(rows[0]['Name'].class, TableTransform::Table::Cell)
-    assert_equal(rows[0]['Name'], 'Jane')
-    assert_equal(rows[0]['Age'],  '22')
-    assert_equal(rows[1]['Name'], 'Joe')
-    assert_equal(rows[1]['Age'],  '', 'Nil should be empty str')
-
-    #fails on unknown columns
-    e = assert_raises{ rows[0]['xxx'] }
-    assert_equal("No column with name 'xxx' exists", e.to_s)
-
-    #case sensitive
-    e = assert_raises{ rows[0]['name'] }
-    assert_equal("No column with name 'name' exists", e.to_s)
+    #too few elements in data row
+    d2 = data.clone
+    d2 << %w(A B)
+    d2 << %w(Jane)
+    e = assert_raises{ TableTransform::Table.new(d2) }
+    assert_equal('Column size mismatch. On row 3. Size 1 expected to be 2', e.to_s)
   end
 
   def test_create_from_file
@@ -69,6 +63,36 @@ class TableTest < Minitest::Test
     # Array have to be > 0 in size
     e = assert_raises{ TableTransform::Table.create_empty([]) }
     assert_equal('Table, No header defined', e.to_s)
+  end
+
+  def test_each_row
+    data = [
+        %w(Name Age),
+        %w(Jane 22),
+        ['Joe',   nil]
+    ]
+    t = TableTransform::Table.new(data)
+
+    assert_equal(data, t.to_a)
+
+    rows = Array.new
+    t.each_row{|r| rows << r}
+
+    assert_equal(2, rows.size)
+    assert_equal(rows[0].class, TableTransform::Table::Row)
+    assert_equal(rows[0]['Name'].class, TableTransform::Table::Cell)
+    assert_equal(rows[0]['Name'], 'Jane')
+    assert_equal(rows[0]['Age'],  '22')
+    assert_equal(rows[1]['Name'], 'Joe')
+    assert_equal(rows[1]['Age'],  '', 'Nil should be empty str')
+
+    #fails on unknown columns
+    e = assert_raises{ rows[0]['xxx'] }
+    assert_equal("No column with name 'xxx' exists", e.to_s)
+
+    #case sensitive
+    e = assert_raises{ rows[0]['name'] }
+    assert_equal("No column with name 'name' exists", e.to_s)
   end
 
   def test_extract
