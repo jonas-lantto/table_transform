@@ -298,14 +298,19 @@ class TableTest < Minitest::Test
     e = assert_raises{ t << {'Severity' => :warning} }
     assert_equal("Value for column 'Category' could not be found", e.to_s)
 
+    # hash value is nil
+    t << {'Severity' => :warning, 'Category' => nil}
+    assert_equal(4, t.to_a.count)
+    assert_equal([:warning, nil], t.to_a.last)
+
     # streamed values not in specified output columns will not be added
     t << {'Severity' => :warning, 'Category' => 'Extra', 'Dummy' => 'DummyValue'}
-    assert_equal(4, t.to_a.count)
-    assert_equal([:warning, 'Extra'], t.to_a.last, "Default default value ''")
+    assert_equal(5, t.to_a.count)
+    assert_equal([:warning, 'Extra'], t.to_a.last)
 
     # streaming can be chained
     t << {'Severity' => :normal, 'Category' => 'T1'} << {'Severity' => :normal, 'Category' => 'T2'}
-    assert_equal(6, t.to_a.count)
+    assert_equal(7, t.to_a.count)
     assert_equal([[:normal, 'T1'], [:normal, 'T2']], t.to_a[-2,2])
   end
 end
