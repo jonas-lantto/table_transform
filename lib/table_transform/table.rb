@@ -10,8 +10,8 @@ module TableTransform
   end
 
   class Table
-    def self.create_from_file(file_name)
-      rows = CSV.read(file_name, { :col_sep => ',' })
+    def self.create_from_file(file_name, sep = ',')
+      rows = CSV.read(file_name, { :col_sep => sep })
       raise "'#{file_name}' contains no data" if rows.empty?
 
       Table.new(rows)

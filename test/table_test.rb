@@ -28,6 +28,23 @@ class TableTest < Minitest::Test
     assert_equal("No column with name 'xxx' exists", e.to_s)
   end
 
+  def test_create_from_file
+    t = TableTransform::Table::create_from_file('./test/data/test_data.csv')
+    assert_equal([%w(A B C),
+                  %w(1 2 3),
+                  ['A A', 'B B', 'C C']],
+                 t.to_a)
+
+    t2 = TableTransform::Table::create_from_file('./test/data/test_data.tsv', "\t")
+    assert_equal([%w(A B C),
+                  %w(1 2 3),
+                  ['A A', 'B B', 'C C']],
+                 t2.to_a)
+
+    e = assert_raises{ TableTransform::Table.create_from_file('./test/data/empty_file.csv') }
+    assert_equal("'./test/data/empty_file.csv' contains no data", e.to_s)
+  end
+
   def test_create_empty
     # vanilla - success
     t = TableTransform::Table.create_empty(%w(Col1 Col2))
@@ -46,7 +63,6 @@ class TableTest < Minitest::Test
     # Array have to be > 0 in size
     e = assert_raises{ TableTransform::Table.create_empty([]) }
     assert_equal('Table, No header defined', e.to_s)
-
   end
 
   def test_extract
