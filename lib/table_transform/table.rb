@@ -23,10 +23,14 @@ module TableTransform
       Table.new([header])
     end
 
+    # @throws if column names not unique
+    # @throws if column size for each row match
     def initialize(rows)
       @data_rows = rows.clone
       @header = @data_rows.shift
       @column_indexes = create_column_name_binding(@header)
+      dup = @header.select{ |e| @header.count(e) > 1 }.uniq
+      raise "Column #{dup.map{|x| "'#{x}'"}.join(' and ')} not unique" if dup.size > 0
       @data_rows.each_with_index {|x, index| raise "Column size mismatch. On row #{index+1}. Size #{x.size} expected to be #{@header.size}" if @header.size != x.size}
     end
 
@@ -69,7 +73,9 @@ module TableTransform
     end
 
     #adds a column with given name to the far right of the table
+    #@throws if given column name already exists
     def add_column(name)
+      raise "Column '#{name}' already exists" if @header.include?(name)
       @header << name
       @data_rows.each{|x|
         x << (yield Row.new(@column_indexes, x))

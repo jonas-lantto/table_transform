@@ -95,6 +95,25 @@ class TableTest < Minitest::Test
     assert_equal("No column with name 'name' exists", e.to_s)
   end
 
+  def test_enforce_column_name_uniqueness
+    # initialize validation single
+    data = [%w(Age Age),
+            %w(22  23)]
+    e = assert_raises{ TableTransform::Table.new(data) }
+    assert_equal("Column 'Age' not unique", e.to_s)
+
+    # initialize validation multiple
+    data = [%w(Age Age Name Name),
+            %w(22  23 A B)]
+    e = assert_raises{ TableTransform::Table.new(data) }
+    assert_equal("Column 'Age' and 'Name' not unique", e.to_s)
+
+    # Add column
+    t = TableTransform::Table::create_empty(%w(Name Age))
+    e = assert_raises{ t.add_column('Age'){} }
+    assert_equal("Column 'Age' already exists", e.to_s)
+  end
+
   def test_extract
     t = TableTransform::Table.create_empty(%w(Name Age Length))
     t << {'Name' => 'Joe',  'Age' => 20, 'Length' => 170}
