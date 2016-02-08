@@ -135,7 +135,7 @@ module TableTransform
       end
 
       def create_row(hash_values)
-        @header.inject([]) { |row, col| row << (hash_values[col] || '') }
+        @header.inject([]) { |row, col| row << (hash_values[col] || (raise "Value for column '#{col}' could not be found")) }
       end
   end
 end
