@@ -18,14 +18,20 @@ class TableTest < Minitest::Test
     t.each_row{|r| rows << r}
 
     assert_equal(2, rows.size)
+    assert_equal(rows[0].class, TableTransform::Table::Row)
     assert_equal(rows[0]['Name'].class, TableTransform::Table::Cell)
     assert_equal(rows[0]['Name'], 'Jane')
     assert_equal(rows[0]['Age'],  '22')
     assert_equal(rows[1]['Name'], 'Joe')
-    assert_equal(rows[1]['Age'],  '')
+    assert_equal(rows[1]['Age'],  '', 'Nil should be empty str')
 
+    #fails on unknown columns
     e = assert_raises{ rows[0]['xxx'] }
     assert_equal("No column with name 'xxx' exists", e.to_s)
+
+    #case sensitive
+    e = assert_raises{ rows[0]['name'] }
+    assert_equal("No column with name 'name' exists", e.to_s)
   end
 
   def test_create_from_file
