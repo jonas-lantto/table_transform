@@ -115,7 +115,7 @@ module TableTransform
       # @throws exception if column name does not exist
       def [](column_name)
         index = Util::get_col_index(column_name, @cols)
-        Cell.new (@row[ index ].to_s || '')
+        Cell.new @row[ index ].to_s || ''
       end
 
     end

@@ -1,6 +1,6 @@
 # TableTransform
 [![Build Status](https://travis-ci.org/jonas-lantto/table_transform.svg)](https://travis-ci.org/jonas-lantto/table_transform)
-
+[![Code Climate](https://codeclimate.com/github/jonas-lantto/table_transform/badges/gpa.svg)](https://codeclimate.com/github/jonas-lantto/table_transform)
 
 ## Installation
 
@@ -19,8 +19,6 @@ Or install it yourself as:
     $ gem install table_transform
 
 ## Usage
-
-TODO: Write usage instructions here
 
 ## Contributing
 

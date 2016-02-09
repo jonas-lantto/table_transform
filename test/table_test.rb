@@ -191,13 +191,13 @@ class TableTest < Minitest::Test
   end
 
   def bench_extract
-    # t = TableTransform::Table.create_empty(['Name', 'Age', 'Length'])
-    # n = 100_000
-    # n.times { t << {name: 'Joe',  age: 20, length: 170}}
-    #
-    # time = Benchmark.realtime { t.extract(['Name', 'Length']) }
-    #
-    # puts "Extract/sec: #{(n / time).to_i}"
+    t = TableTransform::Table.create_empty(['Name', 'Age', 'Length'])
+    n = 100_000
+    n.times { t << {name: 'Joe',  age: 20, length: 170}}
+
+    time = Benchmark.realtime { t.extract(['Name', 'Length']) }
+
+    puts "Extract/sec: #{(n / time).to_i}"
   end
 
   def test_add_column
