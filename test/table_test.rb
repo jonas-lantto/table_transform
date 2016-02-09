@@ -1,4 +1,5 @@
 require 'minitest/autorun'
+require 'benchmark'
 require 'table_transform/table'
 
 
@@ -190,14 +191,24 @@ class TableTest < Minitest::Test
     assert_equal('Tables cannot be added due to header mismatch', e.to_s)
   end
 
-  def bench_extract
+  def numformat(num)
+    num.to_s.gsub(/(\d)(?=(\d\d\d)+(?!\d))/, "\\1 ")
+  end
+
+  def test_bench
     t = TableTransform::Table.create_empty(['Name', 'Age', 'Length'])
-    n = 100_000
-    n.times { t << {name: 'Joe',  age: 20, length: 170}}
+    n = 1_000
+    n.times { t << {'Name' => 'Joe', 'Age' => 20, 'Length' => 170}}
 
     time = Benchmark.realtime { t.extract(['Name', 'Length']) }
+    puts "Extract/sec: #{numformat((n / time).to_i)}"
 
-    puts "Extract/sec: #{(n / time).to_i}"
+    time = Benchmark.realtime { t.filter('Name', 'Joe') }
+    puts "Filter/sec: #{numformat((n / time).to_i)}"
+
+    time = Benchmark.realtime { t.add_column('Age x 2'){|row| row['Age'] * 2} }
+    puts "Adds/sec: #{numformat((n / time).to_i)}"
+
   end
 
   def test_add_column

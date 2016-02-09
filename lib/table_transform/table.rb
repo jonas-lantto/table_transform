@@ -3,9 +3,7 @@ require 'csv'
 module TableTransform
   module Util
     def self.get_col_index(col_name, data)
-      pos = data[col_name]
-      raise "No column with name '#{col_name}' exists" if pos.nil?
-      pos
+      data[col_name] || (raise "No column with name '#{col_name}' exists")
     end
   end
 
@@ -29,8 +27,12 @@ module TableTransform
       @data_rows = rows.clone
       @header = @data_rows.shift
       @column_indexes = create_column_name_binding(@header)
+
+      #validate header uniqueness
       dup = @header.select{ |e| @header.count(e) > 1 }.uniq
       raise "Column #{dup.map{|x| "'#{x}'"}.join(' and ')} not unique" if dup.size > 0
+
+      #validate column size
       @data_rows.each_with_index {|x, index| raise "Column size mismatch. On row #{index+1}. Size #{x.size} expected to be #{@header.size}" if @header.size != x.size}
     end
 
@@ -129,9 +131,7 @@ module TableTransform
 
     private
       def create_column_name_binding(header_row)
-        cols = Hash.new
-        header_row.each_with_index { |x, index | cols[x] = index }
-        cols
+        header_row.map.with_index{ |x, i| [x, i] }.to_h
       end
 
       def create_row(hash_values)
