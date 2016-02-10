@@ -6,8 +6,9 @@ TableTransform is still in pre-release state. This means that its APIs and behav
 
 ## [Unreleased]
 
-## 0.1.0 (unreleased) (2016-02-08)
+## 0.1.0 (2016-02-10)
 
-* Initial release
+* Initial release including Table
 
 [Semver]: http://semver.org
+[Unreleased]: https://github.com/jonas-lantto/table_transform/compare/v0.1.0...HEAD

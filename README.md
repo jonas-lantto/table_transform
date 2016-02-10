@@ -1,4 +1,5 @@
 # TableTransform
+[![Gem Version](https://badge.fury.io/rb/table_transform.svg)](http://badge.fury.io/rb/table_transform)
 [![Build Status](https://travis-ci.org/jonas-lantto/table_transform.svg)](https://travis-ci.org/jonas-lantto/table_transform)
 [![Code Climate](https://codeclimate.com/github/jonas-lantto/table_transform/badges/gpa.svg)](https://codeclimate.com/github/jonas-lantto/table_transform)
 
