@@ -6,9 +6,7 @@
 
 Add this line to your application's Gemfile:
 
-```ruby
-gem 'table_transform'
-```
+    gem 'table_transform'
 
 And then execute:
 
@@ -20,6 +18,43 @@ Or install it yourself as:
 
 ## Usage
 
+### Create and populate
+
+    # Create from file
+    t = TableTransform::Table::create_from_file('data.csv')
+
+    # Create empty table with given column names 
+    t = TableTransform::Table::create_empty(%w(Col1 Col2))
+    t << {'Col1' => 1, 'Col2' => 2}
+
+    # Create from an array of arrays. First row column names
+    data = [ %w(Name Age), %w(Jane 22)]
+    t = TableTransform::Table.new(data)
+
+### Work with the table
+    # Add a new column to the far right
+    t.add_column('NameLength'){|row| row['Name'].size}
+
+    # Change values in existing column
+    t.change_column('Age'){|row| row['Age'].to_i}
+    
+    # Will remove given columns. One or several can be specified.
+    t.delete_column('Name', 'Address')
+    
+    # Create a new Table with given column in specified order
+    t.extract(%w(Length Name))
+    
+    # Filter table 
+    t.filter{|row| row['Age].to_i > 20}
+
+    # Adds rows of two tables with same header
+    t1 = TableTransform::Table::create_empty(%w(Col1 Col2))
+    t2 = TableTransform::Table::create_empty(%w(Col1 Col2))
+    t3 = t1 + t2
+    
+    # Export as array
+    t.to_a
+    
 ## Contributing
 
 Bug reports and pull requests are welcome on [GitHub](https://github.com/jonas-lantto/table_transform).
