@@ -68,10 +68,9 @@ module TableTransform
       Table.new( @data_rows.inject([header]) {|res, row| (res << row.values_at(*selected_cols))} )
     end
 
-    # @returns new table with rows that match given value in given column_name
-    def filter(column_name, value)
-      filter_column = Util::get_col_index(column_name, @column_indexes)
-      Table.new( @data_rows.select {|row| row[filter_column] == value}.unshift @header.clone )
+    # @returns new table with rows that match given block
+    def filter
+      Table.new( @data_rows.select {|row| yield Row.new(@column_indexes, row)}.unshift @header.clone )
     end
 
     #adds a column with given name to the far right of the table
