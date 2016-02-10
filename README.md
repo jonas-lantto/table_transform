@@ -2,6 +2,8 @@
 [![Build Status](https://travis-ci.org/jonas-lantto/table_transform.svg)](https://travis-ci.org/jonas-lantto/table_transform)
 [![Code Climate](https://codeclimate.com/github/jonas-lantto/table_transform/badges/gpa.svg)](https://codeclimate.com/github/jonas-lantto/table_transform)
 
+Utility to work with csv type data in a name safe environment with utilities to transform data
+
 ## Installation
 
 Add this line to your application's Gemfile:

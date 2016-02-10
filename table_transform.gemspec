@@ -9,18 +9,10 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Jonas Lantto']
   spec.email         = ['j@lantto.net']
 
-  spec.summary       = %q{Utility to add/change and transform csv to a table}
+  spec.summary       = %q{Utility to work with csv type data in a name safe environment with utilities to transform data}
   spec.description   = %q{}
   spec.homepage      = 'https://github.com/jonas-lantto/table_transform'
   spec.license       = 'MIT'
-
-  # Prevent pushing this gem to RubyGems.org by setting 'allowed_push_host', or
-  # delete this section to allow pushing this gem to any host.
-  if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = ''
-  else
-    raise 'RubyGems 2.0 or newer is required to protect against public gem pushes.'
-  end
 
   spec.files         = `git ls-files -z`.split("\x0").reject { |f| f.match(%r{^(test|spec|features)/}) }
   spec.bindir        = 'exe'
