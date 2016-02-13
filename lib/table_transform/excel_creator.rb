@@ -19,12 +19,14 @@ module TableTransform
       end
 
 
-      def create_table(workbook, name, data)
+      def self.create_table(workbook, name, data)
         worksheet = workbook.add_worksheet(name)
+        return if data.nil? or data.empty? # Create empty worksheet if no data
+
         col_width = column_width(data)
 
         header = data.shift
-        data << [''] * header.count if data.empty? # Add extra row if empty
+        data << [nil] * header.count if data.empty? # Add extra row if empty
 
         worksheet.add_table(
             0, 0, data.count, header.count - 1,
@@ -36,22 +38,18 @@ module TableTransform
             }
         )
 
-        col_width.each_with_index { |size, column|
-          worksheet.set_column(column, column, size)
-        }
+        # Set column width
+        col_width.each_with_index { |size, column| worksheet.set_column(column, column, size)}
       end
     end
 
     #Creates excel sheet with given filename and given tab(s)
-    def create_workbook(filename, tabs = {})
+    def self.create_workbook(filename, tabs = {})
       workbook = WriteXLSX.new(filename)
       tabs.each { |name, data|
-        create_table(workbook, name, data)
+        Util::create_table(workbook, name, data)
       }
       workbook.close
     end
-
   end
-
-
 end
