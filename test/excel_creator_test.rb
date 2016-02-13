@@ -1,7 +1,7 @@
 require 'minitest/autorun'
 require 'benchmark'
 require 'pathname'
-require 'table_transform/excel_creator'
+require 'table_transform'
 require 'roo'
 require 'securerandom'
 
@@ -40,8 +40,8 @@ class ExcelCreatorTest < Minitest::Test
             [nil, 65.23]]
 
     excel = TableTransform::ExcelCreator.new(@tmp_filename)
-    excel.add_tab('data1', data1)
-    excel.add_tab('Data Header only', [%w(Col1 Col2)])
+    excel.add_tab('data1', TableTransform::Table.new(data1))
+    excel.add_tab('Data Header only', TableTransform::Table.new([%w(Col1 Col2)]))
     excel.add_tab('Data Nil', nil)
     excel.add_tab('Data Empty', [])
     excel.close                                                              

@@ -24,6 +24,7 @@ module TableTransform
     # @throws if column names not unique
     # @throws if column size for each row match
     def initialize(rows)
+      raise 'Table required to have at least a header row' if (rows.nil? or rows.empty?)
       @data_rows = rows.clone
       @header = @data_rows.shift
       @column_indexes = create_column_name_binding(@header)

@@ -18,8 +18,8 @@ module TableTransform
       @workbook.close
     end
 
-    def add_tab(name, data)
-      create_table(name, data)
+    def add_tab(name, table)
+      create_table(name, table.to_a)
     end
 
 

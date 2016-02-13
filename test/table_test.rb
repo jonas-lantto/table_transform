@@ -27,6 +27,13 @@ class TableTest < Minitest::Test
     d2 << %w(Jane)
     e = assert_raises{ TableTransform::Table.new(d2) }
     assert_equal('Column size mismatch. On row 3. Size 1 expected to be 2', e.to_s)
+
+    # Nil and empty input
+    e = assert_raises{ TableTransform::Table.new(nil) }
+    assert_equal('Table required to have at least a header row', e.to_s)
+    e = assert_raises{ TableTransform::Table.new([]) }
+    assert_equal('Table required to have at least a header row', e.to_s)
+
   end
 
   def test_create_from_file
@@ -96,7 +103,7 @@ class TableTest < Minitest::Test
     assert_equal("No column with name 'name' exists", e.to_s)
   end
 
-  def test_enforce_column_name_uniqueness
+  def test_enforce_column_name_uniq
     # initialize validation single
     data = [%w(Age Age),
             %w(22  23)]
@@ -167,7 +174,7 @@ class TableTest < Minitest::Test
         ['Joe',   nil]
     ]
     t = TableTransform::Table.new(Marshal.load( Marshal.dump(data_target) ))
-    t2 = t.filter{|row| row['Age'].to_i == 20}.delete_column('Age')
+    t.filter{|row| row['Age'].to_i == 20}.delete_column('Age')
     assert_equal(data_target, t.to_a)
   end
 
@@ -196,11 +203,11 @@ class TableTest < Minitest::Test
   end
 
   def test_bench
-    t = TableTransform::Table.create_empty(['Name', 'Age', 'Length'])
+    t = TableTransform::Table.create_empty(%w(Name Age Length))
     n = 1_000
     n.times { t << {'Name' => 'Joe', 'Age' => 20, 'Length' => 170}}
 
-    time = Benchmark.realtime { t.extract(['Name', 'Length']) }
+    time = Benchmark.realtime { t.extract(%w(Name Length)) }
     puts "Extract/sec: #{numformat((n / time).to_i)}"
 
     time = Benchmark.realtime { t.filter{|row| row['Name'] == 'Joe' } }
