@@ -6,6 +6,12 @@ TableTransform is still in pre-release state. This means that its APIs and behav
 
 ## [Unreleased]
 
+* Added *Microsoft Excel* format to publish Tables
+
+Fixes:
+
+* Require at least non empty header row to be present in Table
+
 ## 0.1.0 (2016-02-10)
 
 * Initial release including Table

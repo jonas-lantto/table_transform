@@ -34,7 +34,7 @@ Or install it yourself as:
     data = [ %w(Name Age), %w(Jane 22)]
     t = TableTransform::Table.new(data)
 
-### Work with the table
+### Transform
     # Add a new column to the far right
     t.add_column('NameLength'){|row| row['Name'].size}
 
@@ -55,9 +55,22 @@ Or install it yourself as:
     t2 = TableTransform::Table::create_empty(%w(Col1 Col2))
     t3 = t1 + t2
     
+ 
+### Publish
     # Export as array
     t.to_a
-    
+
+    # Excel sheet
+    excel = TableTransform::ExcelCreator.new('output.xlsx')
+    excel.add_tab('Result', t)
+    excel.create!
+
+#### Excel Creator
+Will create an Excel Table on each tab. Name of the table will be the same as the sheet (except space replaced
+with _)
+
+Each column will be auto scaled to an approximate size based on column content.
+     
 ## Contributing
 
 Bug reports and pull requests are welcome on [GitHub](https://github.com/jonas-lantto/table_transform).
