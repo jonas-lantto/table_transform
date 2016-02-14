@@ -44,7 +44,7 @@ class ExcelCreatorTest < Minitest::Test
     excel.add_tab('Data Header only', TableTransform::Table.new([%w(Col1 Col2)]))
     excel.add_tab('Data Nil', nil)
     excel.add_tab('Data Empty', [])
-    excel.close                                                              
+    excel.create!
     
     xlsx = Roo::Excelx.new(@tmp_filename)
     assert_equal(['data1', 'Data Header only','Data Nil', 'Data Empty'], xlsx.sheets)

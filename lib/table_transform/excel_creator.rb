@@ -7,14 +7,9 @@ module TableTransform
   class ExcelCreator
     def initialize(filename)
       @workbook = WriteXLSX.new(filename)
-      ObjectSpace.define_finalizer(self, self.class.finalize(@workbook))
     end
 
-    def self.finalize(workbook)
-      proc { workbook.close }
-    end
-
-    def close
+    def create!
       @workbook.close
     end
 
@@ -22,7 +17,7 @@ module TableTransform
       create_table(name, table.to_a)
     end
 
-
+    #################################
     private
 
     # @return array with column width per column
