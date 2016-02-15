@@ -29,12 +29,8 @@ module TableTransform
       @header = @data_rows.shift
       @column_indexes = create_column_name_binding(@header)
 
-      #validate header uniqueness
-      dup = @header.select{ |e| @header.count(e) > 1 }.uniq
-      raise "Column #{dup.map{|x| "'#{x}'"}.join(' and ')} not unique" if dup.size > 0
-
-      #validate column size
-      @data_rows.each_with_index {|x, index| raise "Column size mismatch. On row #{index+1}. Size #{x.size} expected to be #{@header.size}" if @header.size != x.size}
+      validate_header_uniqueness
+      validate_column_size
     end
 
     def << (hash_values)
@@ -104,6 +100,17 @@ module TableTransform
 
       @column_indexes = create_column_name_binding(@header)
       self
+    end
+
+    # @throws unless all header names are unique
+    private def validate_header_uniqueness
+      dup = @header.select{ |e| @header.count(e) > 1 }.uniq
+      raise "Column #{dup.map{|x| "'#{x}'"}.join(' and ')} not unique" if dup.size > 0
+    end
+
+    # @throws unless all rows have same number of elements
+    private def validate_column_size
+      @data_rows.each_with_index {|x, index| raise "Column size mismatch. On row #{index+1}. Size #{x.size} expected to be #{@header.size}" if @header.size != x.size}
     end
 
     class Row
