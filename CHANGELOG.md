@@ -6,7 +6,9 @@ TableTransform is still in pre-release state. This means that its APIs and behav
 
 ## [Unreleased]
 
-* Added *Microsoft Excel* format to publish Tables
+## [0.2.0][] (2016-02-16)
+
+* Added ability to publish Tables in *Microsoft Excel* format
 
 Fixes:
 
@@ -17,4 +19,5 @@ Fixes:
 * Initial release including Table
 
 [Semver]: http://semver.org
-[Unreleased]: https://github.com/jonas-lantto/table_transform/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/jonas-lantto/table_transform/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/jonas-lantto/table_transform/compare/v0.1.0...0.2.0
