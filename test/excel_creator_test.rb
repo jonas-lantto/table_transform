@@ -1,4 +1,4 @@
-require 'minitest/autorun'
+require_relative 'test_helper'
 require 'benchmark'
 require 'pathname'
 require 'table_transform'

@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Jonas Lantto']
   spec.email         = ['j@lantto.net']
 
-  spec.summary       = %q{Utility to work with csv type data in a name safe environment with utilities to transform data}
-  spec.description   = %q{}
+  spec.summary       = %q{Transforms csv like data to Excel}
+  spec.description   = %q{Utility to work with csv type data in a name safe environment with utilities to transform data}
   spec.homepage      = 'https://github.com/jonas-lantto/table_transform'
   spec.license       = 'MIT'
 
@@ -19,9 +19,12 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_development_dependency 'bundler',    '~> 1.10'
+  spec.required_ruby_version = '>= 2.1'
+
+  spec.add_development_dependency 'bundler'
   spec.add_development_dependency 'rake',       '~> 10.0'
   spec.add_development_dependency 'minitest',   '~> 5.0'
   spec.add_development_dependency 'write_xlsx', '~> 0.83'
   spec.add_development_dependency 'roo',        '~> 2.3'
+  spec.add_development_dependency 'codeclimate-test-reporter'
 end
