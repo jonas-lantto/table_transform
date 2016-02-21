@@ -28,9 +28,18 @@ module TableTransform
       @data_rows = rows.clone
       @header = @data_rows.shift
       @column_indexes = create_column_name_binding(@header)
+      @metadata = Hash[@header.zip(Array.new(@header.size){{}})]
 
       validate_header_uniqueness
       validate_column_size
+    end
+
+    def add_format(format, *columns)
+      columns.each{|col| @metadata[col].merge!({format: format})}
+    end
+
+    def metadata
+      @metadata.clone
     end
 
     def << (hash_values)

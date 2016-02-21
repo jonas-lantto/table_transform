@@ -331,4 +331,20 @@ class TableTest < Minitest::Test
     assert_equal(7, t.to_a.count)
     assert_equal([[:normal, 'T1'], [:normal, 'T2']], t.to_a[-2,2])
   end
+
+  def test_add_format
+    t = TableTransform::Table.create_empty(%w(Name Income Dept Tax))
+    t << {'Name' => 'Joe',  'Income' => 500_000,   'Dept' => 43_000,  'Tax' => 0.15}
+    t << {'Name' => 'Jane', 'Income' => 1_300_000, 'Dept' => 180_000, 'Tax' => 0.567}
+
+    t.add_format('#,##0', 'Income', 'Dept')
+    t.add_format('0.0%', 'Tax')
+
+    assert_equal(4, t.metadata.size)
+
+    assert_equal({},                t.metadata['Name'])
+    assert_equal({format: '#,##0'}, t.metadata['Income'])
+    assert_equal({format: '#,##0'}, t.metadata['Dept'])
+    assert_equal({format: '0.0%'},  t.metadata['Tax'])
+  end
 end
