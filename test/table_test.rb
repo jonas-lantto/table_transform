@@ -33,7 +33,6 @@ class TableTest < Minitest::Test
     assert_equal('Table required to have at least a header row', e.to_s)
     e = assert_raises{ TableTransform::Table.new([]) }
     assert_equal('Table required to have at least a header row', e.to_s)
-
   end
 
   def test_create_from_file
@@ -346,5 +345,16 @@ class TableTest < Minitest::Test
     assert_equal({format: '#,##0'}, t.metadata['Income'])
     assert_equal({format: '#,##0'}, t.metadata['Dept'])
     assert_equal({format: '0.0%'},  t.metadata['Tax'])
+
+    t.delete_column('Dept')
+    assert_equal(3, t.metadata.size)
+    assert_equal(nil, t.metadata['Dept'])
+
+    t = t.extract(['Name', 'Tax'])
+    assert_equal(2, t.metadata.size)
+    assert_equal({}, t.metadata['Name'])
+    assert_equal({format: '0.0%'}, t.metadata['Tax'])
+
+
   end
 end
