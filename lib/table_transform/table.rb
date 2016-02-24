@@ -71,7 +71,8 @@ module TableTransform
 
     # @returns new table with specified columns specified in given header
     def extract(header)
-      selected_cols = header.inject([]) { |res, c| res << Util::get_col_index(c, @column_indexes) }
+      validate_column_names(*header)
+      selected_cols = @column_indexes.values_at(*header)
       t = Table.new( @data_rows.inject([header]) {|res, row| (res << row.values_at(*selected_cols))} )
       t.metadata = t.metadata.keys.zip(@metadata.values_at(*header)).to_h
       t
@@ -103,24 +104,14 @@ module TableTransform
     end
 
     def delete_column(*names)
-      names.each{|n| Util::get_col_index(n, @column_indexes); @metadata.delete(n)}
+      validate_column_names(*names)
+      names.each{|n| @metadata.delete(n)}
 
-      selected_cols = @metadata.keys.inject([]) { |res, c| res << Util::get_col_index(c, @column_indexes) }
+      selected_cols = @column_indexes.values_at(*@metadata.keys)
       @data_rows.map!{|row| row.values_at(*selected_cols)}
 
       @column_indexes = create_column_name_binding(@metadata.keys)
       self
-    end
-
-    # @throws unless all header names are unique
-    private def validate_header_uniqueness(header)
-      dup = header.select{ |e| header.count(e) > 1 }.uniq
-      raise "Column #{dup.map{|x| "'#{x}'"}.join(' and ')} not unique" if dup.size > 0
-    end
-
-    # @throws unless all rows have same number of elements
-    private def validate_column_size
-      @data_rows.each_with_index {|x, index| raise "Column size mismatch. On row #{index+1}. Size #{x.size} expected to be #{@metadata.size}" if @metadata.size != x.size}
     end
 
     class Row
@@ -156,6 +147,22 @@ module TableTransform
 
       def create_row(hash_values)
         @metadata.keys.inject([]) { |row, col| row << hash_values.fetch(col){raise "Value for column '#{col}' could not be found"} }
+      end
+
+      # @throws unless all header names are unique
+      def validate_header_uniqueness(header)
+        dup = header.select{ |e| header.count(e) > 1 }.uniq
+        raise "Column #{dup.map{|x| "'#{x}'"}.join(' and ')} not unique" if dup.size > 0
+      end
+
+      # @throws unless all rows have same number of elements
+      def validate_column_size
+        @data_rows.each_with_index {|x, index| raise "Column size mismatch. On row #{index+1}. Size #{x.size} expected to be #{@metadata.size}" if @metadata.size != x.size}
+      end
+
+      def validate_column_names(*names)
+        diff = names - @metadata.keys
+        raise raise "No column with name '#{diff.first}' exists" if diff.size > 0
       end
   end
 end
