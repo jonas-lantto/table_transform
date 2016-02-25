@@ -40,16 +40,8 @@ module TableTransform
     #  set_metadata('Col1', {format: '#,##0'})
     def set_metadata(*columns, metadata)
       validate_column_names(*columns)
-      raise 'Metadata must be a hash' unless metadata.is_a?(Hash)
+      validate_metadata_tags(metadata)
 
-      metadata.each{|k, v|
-        case k
-          when :format
-            raise "Meta tag 'format' expected to be a non-empty string" unless v.is_a?(String) && !v.empty?
-          else
-            raise "Unknown meta data tag '#{k}'"
-        end
-      }
       columns.each{|col| @metadata[col] = metadata}
     end
 
@@ -166,7 +158,7 @@ module TableTransform
       # @throws unless all header names are unique
       def validate_header_uniqueness(header)
         dup = header.select{ |e| header.count(e) > 1 }.uniq
-        raise "Column #{dup.map{|x| "'#{x}'"}.join(' and ')} not unique" if dup.size > 0
+        raise "Column(s) not unique: #{dup.map{|x| "'#{x}'"}.join(', ')}" if dup.size > 0
       end
 
       # @throws unless all rows have same number of elements
@@ -177,6 +169,18 @@ module TableTransform
       def validate_column_names(*names)
         diff = names - @metadata.keys
         raise raise "No column with name '#{diff.first}' exists" if diff.size > 0
+      end
+
+      def validate_metadata_tags(metadata)
+        raise 'Metadata must be a hash' unless metadata.is_a?(Hash)
+        metadata.each { |k, v|
+          case k
+            when :format
+              raise "Meta tag 'format' expected to be a non-empty string" unless v.is_a?(String) && !v.empty?
+            else
+              raise "Unknown meta data tag '#{k}'"
+          end
+        }
       end
   end
 end

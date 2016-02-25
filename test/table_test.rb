@@ -107,13 +107,13 @@ class TableTest < Minitest::Test
     data = [%w(Age Age),
             %w(22  23)]
     e = assert_raises{ TableTransform::Table.new(data) }
-    assert_equal("Column 'Age' not unique", e.to_s)
+    assert_equal("Column(s) not unique: 'Age'", e.to_s)
 
     # initialize validation multiple
     data = [%w(Age Age Name Name),
             %w(22  23 A B)]
     e = assert_raises{ TableTransform::Table.new(data) }
-    assert_equal("Column 'Age' and 'Name' not unique", e.to_s)
+    assert_equal("Column(s) not unique: 'Age', 'Name'", e.to_s)
 
     # Add column
     t = TableTransform::Table::create_empty(%w(Name Age))
