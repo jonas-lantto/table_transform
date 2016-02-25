@@ -331,30 +331,52 @@ class TableTest < Minitest::Test
     assert_equal([[:normal, 'T1'], [:normal, 'T2']], t.to_a[-2,2])
   end
 
-  def test_add_format
+  def test_metadata
     t = TableTransform::Table.create_empty(%w(Name Income Dept Tax))
     t << {'Name' => 'Joe',  'Income' => 500_000,   'Dept' => 43_000,  'Tax' => 0.15}
     t << {'Name' => 'Jane', 'Income' => 1_300_000, 'Dept' => 180_000, 'Tax' => 0.567}
 
-    t.add_format('#,##0', 'Income', 'Dept')
-    t.add_format('0.0%', 'Tax')
+    t.set_metadata(*%w(Income Tax Dept), {format: '#,##0'})
 
+    # Set and re-set column metadata
     assert_equal(4, t.metadata.size)
-
     assert_equal({},                t.metadata['Name'])
     assert_equal({format: '#,##0'}, t.metadata['Income'])
     assert_equal({format: '#,##0'}, t.metadata['Dept'])
+    assert_equal({format: '#,##0'},  t.metadata['Tax'])
+
+    t.set_metadata('Tax', {format: '0.0%'})
     assert_equal({format: '0.0%'},  t.metadata['Tax'])
 
+    # Delete column
     t.delete_column('Dept')
     assert_equal(3, t.metadata.size)
     assert_equal(nil, t.metadata['Dept'])
 
+    # Extract column
     t = t.extract(['Name', 'Tax'])
     assert_equal(2, t.metadata.size)
     assert_equal({}, t.metadata['Name'])
     assert_equal({format: '0.0%'}, t.metadata['Tax'])
 
+    # invalid column name
+    e = assert_raises{ t.set_metadata('xxx', 'yyy', {format: 'xxx'}) }
+    assert_equal("No column with name 'xxx' exists", e.to_s)
 
+    # invalid metadata
+    e = assert_raises{ t.set_metadata('Tax', nil) }
+    assert_equal('Metadata must be a hash', e.to_s)
+
+    e = assert_raises{ t.set_metadata('Tax', []) }
+    assert_equal('Metadata must be a hash', e.to_s)
+
+    e = assert_raises{ t.set_metadata('Tax', {format2: 'xxx', format3: 45}) }
+    assert_equal("Unknown meta data tag 'format2'", e.to_s)
+
+    e = assert_raises{ t.set_metadata('Tax', {format: 34}) }
+    assert_equal("Meta tag 'format' expected to be a non-empty string", e.to_s)
+
+    e = assert_raises{ t.set_metadata('Tax', {format: ''}) }
+    assert_equal("Meta tag 'format' expected to be a non-empty string", e.to_s)
   end
 end

@@ -35,8 +35,22 @@ module TableTransform
       validate_column_size
     end
 
-    def add_format(format, *columns)
-      columns.each{|col| @metadata[col].merge!({format: format})}
+    # Sets metadata for given columns
+    # Example:
+    #  set_metadata('Col1', {format: '#,##0'})
+    def set_metadata(*columns, metadata)
+      validate_column_names(*columns)
+      raise 'Metadata must be a hash' unless metadata.is_a?(Hash)
+
+      metadata.each{|k, v|
+        case k
+          when :format
+            raise "Meta tag 'format' expected to be a non-empty string" unless v.is_a?(String) && !v.empty?
+          else
+            raise "Unknown meta data tag '#{k}'"
+        end
+      }
+      columns.each{|col| @metadata[col] = metadata}
     end
 
     def metadata
