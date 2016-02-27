@@ -1,4 +1,5 @@
 require 'write_xlsx'
+require_relative 'table'
 
 
 module TableTransform
@@ -7,6 +8,7 @@ module TableTransform
   class ExcelCreator
     def initialize(filename)
       @workbook = WriteXLSX.new(filename)
+      @formats = {}
     end
 
     def create!
@@ -14,7 +16,8 @@ module TableTransform
     end
 
     def add_tab(name, table)
-      create_table(name, table.to_a)
+      set_formats(table.metadata) if table.is_a?(TableTransform::Table)
+      create_table(name, table)
     end
 
     #################################
@@ -35,8 +38,25 @@ module TableTransform
       res.map! { |x| [x, max_width].min }
     end
 
-    def create_table(name, data)
+    def set_formats(metadata)
+      metadata.each{|_,v|
+        f = v[:format]
+        @formats[f] ||= @workbook.add_format(:num_format => f) unless f.nil?
+      }
+    end
+
+    def create_column_metadata(metadata, formats)
+      res = []
+      metadata.each{ |header_name, data|
+        data[:format] = formats[data[:format]] unless data[:format].nil? #replace str format with excel representation
+        res << {header: header_name}.merge(data)
+      }
+      res
+    end
+
+    def create_table(name, table)
       worksheet = @workbook.add_worksheet(name)
+      data = table.to_a
       return if data.nil? or data.empty? # Create empty worksheet if no data
 
       auto_filter = true
@@ -51,7 +71,7 @@ module TableTransform
               :name => name.tr(' ', '_'),
               :data => data,
               :autofilter => auto_filter ? 1 : 0,
-              :columns => header.map { |v| {:header => v} }
+              :columns => create_column_metadata(table.metadata, @formats)
           }
       )
 

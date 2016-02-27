@@ -42,7 +42,7 @@ module TableTransform
       validate_column_names(*columns)
       validate_metadata_tags(metadata)
 
-      columns.each{|col| @metadata[col] = metadata}
+      columns.each{|col| @metadata[col] = metadata.clone}
     end
 
     def metadata
