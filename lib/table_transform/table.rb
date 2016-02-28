@@ -55,11 +55,12 @@ module TableTransform
     end
 
     # Add two tables
-    # @throws if header do not match
+    # @throws if header or meta data do not match
     def +(table)
       t2 = table.to_a
       t2_header = t2.shift
       raise 'Tables cannot be added due to header mismatch' if @metadata.keys != t2_header
+      raise 'Tables cannot be added due to meta data mismatch' if @metadata != table.metadata
       TableTransform::Table.new(self.to_a + t2)
     end
 
