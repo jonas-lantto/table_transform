@@ -94,10 +94,13 @@ class ExcelCreatorTest < Minitest::Test
     excel.add_tab('format_tab', t)
     assert_equal(2, excel.instance_eval{@formats.size})
 
+    excel.add_tab('format_tab_select', t.extract(%w(Income)))
+    assert_equal(2, excel.instance_eval{@formats.size})
+
     excel.create!
 
     xlsx = Roo::Excelx.new(@tmp_filename)
-    assert_equal(['format_tab'], xlsx.sheets)
+    assert_equal(%w(format_tab format_tab_select), xlsx.sheets)
 
     # note
     # Roo supports only a subset of all formats Excel covers.
@@ -111,5 +114,9 @@ class ExcelCreatorTest < Minitest::Test
 
     assert_equal('15.00%', sheet.formatted_value(2, 'D'))
     assert_equal('56.72%', sheet.formatted_value(3, 'D'))
+
+    sheet = xlsx.sheet('format_tab_select')
+    assert_equal('500,000', sheet.formatted_value(2, 'A'))
+    assert_equal('1,300,000', sheet.formatted_value(3, 'A'))
   end
 end
