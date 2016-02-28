@@ -55,8 +55,14 @@ Or install it yourself as:
     t1 = TableTransform::Table::create_empty(%w(Col1 Col2))
     t2 = TableTransform::Table::create_empty(%w(Col1 Col2))
     t3 = t1 + t2
-    
+
+### Meta data
+    # Set format for one column
+    t.set_metadata('Tax', {format: '0.0%'})
  
+    # Set format for multiple columns
+    t.set_metadata(*%w(Income Tax Dept), {format: '#,##0'})
+    
 ### Publish
     # Export as array
     t.to_a
