@@ -92,13 +92,14 @@ module TableTransform
 
     #adds a column with given name to the far right of the table
     #@throws if given column name already exists
-    def add_column(name)
+    def add_column(name, metadata = {})
       raise "Column '#{name}' already exists" if @metadata.keys.include?(name)
       @metadata[name] = {}
       @data_rows.each{|x|
         x << (yield Row.new(@column_indexes, x))
       }
       @column_indexes[name] = @column_indexes.size
+      set_metadata(name, metadata)
       self # enable chaining
     end
 
@@ -107,6 +108,7 @@ module TableTransform
       @data_rows.each{|r|
         r[index] = yield Row.new(@column_indexes, r)
       }
+
       self # enable chaining
     end
 

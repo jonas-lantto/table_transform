@@ -238,6 +238,14 @@ class TableTest < Minitest::Test
     assert_equal(4, t.to_a[1][2])
 
     t.each_row{|r| assert_equal(r['Name'].size, r['NameLength'].to_i)}
+
+    # Set meta data
+    t.add_column('Tax', {format: '0.0%'}){|row| 0.25}
+    assert_equal({format: '0.0%'}, t.metadata['Tax'])
+
+    # Set meta data, verify meta data verification
+    e = assert_raises{ t.add_column('Tax2', {format2: '0.0%'}){|row| 0.25} }
+    assert_equal("Unknown meta data tag 'format2'", e.to_s)
   end
 
   def test_change_column

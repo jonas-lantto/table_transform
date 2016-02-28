@@ -63,6 +63,9 @@ Or install it yourself as:
     # Set format for multiple columns
     t.set_metadata(*%w(Income Tax Dept), {format: '#,##0'})
     
+    # Add meta data during add_column
+    t.add_column('Tax', {format: '0.0%'}){|row| 0.25}
+    
 ### Publish
     # Export as array
     t.to_a
