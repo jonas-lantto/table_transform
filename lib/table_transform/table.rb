@@ -45,6 +45,7 @@ module TableTransform
       columns.each{|col| @metadata[col] = metadata.clone}
     end
 
+    # Returns meta data as Hash with header name as key
     def metadata
       @metadata.clone
     end
