@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/jonas-lantto/table_transform.svg)](https://travis-ci.org/jonas-lantto/table_transform)
 [![Code Climate](https://codeclimate.com/github/jonas-lantto/table_transform/badges/gpa.svg)](https://codeclimate.com/github/jonas-lantto/table_transform)
 [![Test Coverage](https://codeclimate.com/github/jonas-lantto/table_transform/badges/coverage.svg)](https://codeclimate.com/github/jonas-lantto/table_transform/coverage)
+[![Issue Count](https://codeclimate.com/github/jonas-lantto/table_transform/badges/issue_count.svg)](https://codeclimate.com/github/jonas-lantto/table_transform)
 
 Utility to work with csv type data in a name safe environment with utilities to transform data
 
@@ -55,6 +56,22 @@ Or install it yourself as:
     t1 = TableTransform::Table::create_empty(%w(Col1 Col2))
     t2 = TableTransform::Table::create_empty(%w(Col1 Col2))
     t3 = t1 + t2
+
+### Inspect and traverse
+    # Loop through all rows
+    t.each_row{|row| puts row['Rebate'].to_f * row['Price'].to_f}
+
+#### Table::Row
+`Table::each_row` return a `Table::Row`<br/>
+A row can access its values by column name e.g. `row['Name']`
+
+#### Table:Cell
+    # Table::Cell < String
+    row['operating_system'].downcase == 'centos'
+
+    # include_any?
+    c = row['Col1']                # c = 'CHECK'
+    c.include_any?(%w(AA EC DD)))  # true
 
 ### Meta data    
     # Set format for one column
