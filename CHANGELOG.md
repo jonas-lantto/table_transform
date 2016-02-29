@@ -6,23 +6,20 @@ TableTransform is still in pre-release state. This means that its APIs and behav
 
 ## [Unreleased]
 
+## [0.3.0][] (2016-02-29)
 * Added format capability for columns when published as Excel
 * CodeClimate and test coverage added
 * Ruby >= 2.1 verified with TravisCI
 * Improved documentation
 
 ## [0.2.0][] (2016-02-16)
-
 * Added ability to publish Tables in *Microsoft Excel* format
-
-Fixes:
-
-* Require at least non empty header row to be present in Table
+* [FIX] Require at least non empty header row to be present in Table
 
 ## 0.1.0 (2016-02-10)
-
 * Initial release including Table
 
 [Semver]: http://semver.org
-[Unreleased]: https://github.com/jonas-lantto/table_transform/compare/v0.2.0...HEAD
-[0.2.0]: https://github.com/jonas-lantto/table_transform/compare/v0.1.0...0.2.0
+[Unreleased]: https://github.com/jonas-lantto/table_transform/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/jonas-lantto/table_transform/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/jonas-lantto/table_transform/compare/v0.1.0...v0.2.0
