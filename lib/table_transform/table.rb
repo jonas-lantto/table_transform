@@ -25,12 +25,29 @@ module TableTransform
     # @throws if column size for each row match
     def initialize(rows)
       raise 'Table required to have at least a header row' if (rows.nil? or rows.empty?)
-      @data_rows = rows.clone
-      @header = @data_rows.shift
-      @column_indexes = create_column_name_binding(@header)
 
-      validate_header_uniqueness
+      @data_rows = rows.clone
+      header = @data_rows.shift
+      @column_indexes = create_column_name_binding(header)
+      @metadata = header.zip( Array.new(header.size){{}} ).to_h
+
+      validate_header_uniqueness(header)
       validate_column_size
+    end
+
+    # Sets metadata for given columns
+    # Example:
+    #  set_metadata('Col1', {format: '#,##0'})
+    def set_metadata(*columns, metadata)
+      validate_column_names(*columns)
+      validate_metadata_tags(metadata)
+
+      columns.each{|col| @metadata[col] = metadata.clone}
+    end
+
+    # Returns meta data as Hash with header name as key
+    def metadata
+      @metadata.clone
     end
 
     def << (hash_values)
@@ -39,11 +56,12 @@ module TableTransform
     end
 
     # Add two tables
-    # @throws if header do not match
+    # @throws if header or meta data do not match
     def +(table)
       t2 = table.to_a
       t2_header = t2.shift
-      raise 'Tables cannot be added due to header mismatch' if @header != t2_header
+      raise 'Tables cannot be added due to header mismatch' if @metadata.keys != t2_header
+      raise 'Tables cannot be added due to meta data mismatch' if @metadata != table.metadata
       TableTransform::Table.new(self.to_a + t2)
     end
 
@@ -56,29 +74,33 @@ module TableTransform
     # @returns array of data arrays including header row
     def to_a
       res = @data_rows.clone
-      res.unshift @header
+      res.unshift @metadata.keys.clone
     end
 
     # @returns new table with specified columns specified in given header
     def extract(header)
-      selected_cols = header.inject([]) { |res, c| res << Util::get_col_index(c, @column_indexes) }
-      Table.new( @data_rows.inject([header]) {|res, row| (res << row.values_at(*selected_cols))} )
+      validate_column_names(*header)
+      selected_cols = @column_indexes.values_at(*header)
+      t = Table.new( @data_rows.inject([header]) {|res, row| (res << row.values_at(*selected_cols))} )
+      t.metadata = t.metadata.keys.zip(@metadata.values_at(*header)).to_h
+      t
     end
 
     # @returns new table with rows that match given block
     def filter
-      Table.new( @data_rows.select {|row| yield Row.new(@column_indexes, row)}.unshift @header.clone )
+      Table.new( @data_rows.select {|row| yield Row.new(@column_indexes, row)}.unshift @metadata.keys.clone )
     end
 
     #adds a column with given name to the far right of the table
     #@throws if given column name already exists
-    def add_column(name)
-      raise "Column '#{name}' already exists" if @header.include?(name)
-      @header << name
+    def add_column(name, metadata = {})
+      raise "Column '#{name}' already exists" if @metadata.keys.include?(name)
+      @metadata[name] = {}
       @data_rows.each{|x|
         x << (yield Row.new(@column_indexes, x))
       }
       @column_indexes[name] = @column_indexes.size
+      set_metadata(name, metadata)
       self # enable chaining
     end
 
@@ -87,30 +109,19 @@ module TableTransform
       @data_rows.each{|r|
         r[index] = yield Row.new(@column_indexes, r)
       }
+
       self # enable chaining
     end
 
     def delete_column(*names)
-      delete_indexes = names.inject([]){|res, n| res << Util::get_col_index(n, @column_indexes)}
-      delete_indexes.sort!.reverse!
-      delete_indexes.each{|i| @header.delete_at(i)}
+      validate_column_names(*names)
+      names.each{|n| @metadata.delete(n)}
 
-      selected_cols = @header.inject([]) { |res, c| res << Util::get_col_index(c, @column_indexes) }
+      selected_cols = @column_indexes.values_at(*@metadata.keys)
       @data_rows.map!{|row| row.values_at(*selected_cols)}
 
-      @column_indexes = create_column_name_binding(@header)
+      @column_indexes = create_column_name_binding(@metadata.keys)
       self
-    end
-
-    # @throws unless all header names are unique
-    private def validate_header_uniqueness
-      dup = @header.select{ |e| @header.count(e) > 1 }.uniq
-      raise "Column #{dup.map{|x| "'#{x}'"}.join(' and ')} not unique" if dup.size > 0
-    end
-
-    # @throws unless all rows have same number of elements
-    private def validate_column_size
-      @data_rows.each_with_index {|x, index| raise "Column size mismatch. On row #{index+1}. Size #{x.size} expected to be #{@header.size}" if @header.size != x.size}
     end
 
     class Row
@@ -136,13 +147,44 @@ module TableTransform
       end
     end
 
+    protected
+      attr_writer :metadata
+
     private
       def create_column_name_binding(header_row)
         header_row.map.with_index{ |x, i| [x, i] }.to_h
       end
 
       def create_row(hash_values)
-        @header.inject([]) { |row, col| row << hash_values.fetch(col){raise "Value for column '#{col}' could not be found"} }
+        @metadata.keys.inject([]) { |row, col| row << hash_values.fetch(col){raise "Value for column '#{col}' could not be found"} }
+      end
+
+      # @throws unless all header names are unique
+      def validate_header_uniqueness(header)
+        dup = header.select{ |e| header.count(e) > 1 }.uniq
+        raise "Column(s) not unique: #{dup.map{|x| "'#{x}'"}.join(', ')}" if dup.size > 0
+      end
+
+      # @throws unless all rows have same number of elements
+      def validate_column_size
+        @data_rows.each_with_index {|x, index| raise "Column size mismatch. On row #{index+1}. Size #{x.size} expected to be #{@metadata.size}" if @metadata.size != x.size}
+      end
+
+      def validate_column_names(*names)
+        diff = names - @metadata.keys
+        raise raise "No column with name '#{diff.first}' exists" if diff.size > 0
+      end
+
+      def validate_metadata_tags(metadata)
+        raise 'Metadata must be a hash' unless metadata.is_a?(Hash)
+        metadata.each { |k, v|
+          case k
+            when :format
+              raise "Meta tag 'format' expected to be a non-empty string" unless v.is_a?(String) && !v.empty?
+            else
+              raise "Unknown meta data tag '#{k}'"
+          end
+        }
       end
   end
 end

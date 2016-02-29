@@ -80,6 +80,43 @@ class ExcelCreatorTest < Minitest::Test
 
     sheet = xlsx.sheet('Data Empty')
       assert_equal(nil,     sheet.cell(1, 'A'))
+  end
 
+  def test_format
+    t = TableTransform::Table.create_empty(%w(Name Income Dept Tax))
+    t << {'Name' => 'Joe',  'Income' => 500_000,   'Dept' => 43_000,  'Tax' => 0.15}
+    t << {'Name' => 'Jane', 'Income' => 1_300_000, 'Dept' => 180_000, 'Tax' => 0.5672}
+
+    t.set_metadata(*%w(Income Tax Dept), {format: '#,##0'})
+    t.set_metadata('Tax', {format: '0.00%'})
+
+    excel = TableTransform::ExcelCreator.new(@tmp_filename)
+    excel.add_tab('format_tab', t)
+    assert_equal(2, excel.instance_eval{@formats.size})
+
+    excel.add_tab('format_tab_select', t.extract(%w(Income)))
+    assert_equal(2, excel.instance_eval{@formats.size})
+
+    excel.create!
+
+    xlsx = Roo::Excelx.new(@tmp_filename)
+    assert_equal(%w(format_tab format_tab_select), xlsx.sheets)
+
+    # note
+    # Roo supports only a subset of all formats Excel covers.
+    # This test adapted to the Roo subset to verify formats are set at expected - not the format itself
+    sheet = xlsx.sheet('format_tab')
+    assert_equal('500,000', sheet.formatted_value(2, 'B'))
+    assert_equal('1,300,000', sheet.formatted_value(3, 'B'))
+
+    assert_equal('43,000', sheet.formatted_value(2, 'C'))
+    assert_equal('180,000', sheet.formatted_value(3, 'C'))
+
+    assert_equal('15.00%', sheet.formatted_value(2, 'D'))
+    assert_equal('56.72%', sheet.formatted_value(3, 'D'))
+
+    sheet = xlsx.sheet('format_tab_select')
+    assert_equal('500,000', sheet.formatted_value(2, 'A'))
+    assert_equal('1,300,000', sheet.formatted_value(3, 'A'))
   end
 end

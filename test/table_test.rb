@@ -33,7 +33,6 @@ class TableTest < Minitest::Test
     assert_equal('Table required to have at least a header row', e.to_s)
     e = assert_raises{ TableTransform::Table.new([]) }
     assert_equal('Table required to have at least a header row', e.to_s)
-
   end
 
   def test_create_from_file
@@ -108,13 +107,13 @@ class TableTest < Minitest::Test
     data = [%w(Age Age),
             %w(22  23)]
     e = assert_raises{ TableTransform::Table.new(data) }
-    assert_equal("Column 'Age' not unique", e.to_s)
+    assert_equal("Column(s) not unique: 'Age'", e.to_s)
 
     # initialize validation multiple
     data = [%w(Age Age Name Name),
             %w(22  23 A B)]
     e = assert_raises{ TableTransform::Table.new(data) }
-    assert_equal("Column 'Age' and 'Name' not unique", e.to_s)
+    assert_equal("Column(s) not unique: 'Age', 'Name'", e.to_s)
 
     # Add column
     t = TableTransform::Table::create_empty(%w(Name Age))
@@ -196,6 +195,13 @@ class TableTest < Minitest::Test
     t2 = TableTransform::Table.create_empty(%w(Name Length Age))
     e = assert_raises{ t1 + t2 }
     assert_equal('Tables cannot be added due to header mismatch', e.to_s)
+
+    #header mismatch - metadata
+    t1 = TableTransform::Table.create_empty(%w(Name Age Length))
+    t2 = TableTransform::Table.create_empty(%w(Name Age Length))
+    t1.set_metadata('Age', {format: '#,##0'})
+    e = assert_raises{ t1 + t2 }
+    assert_equal('Tables cannot be added due to meta data mismatch', e.to_s)
   end
 
   def numformat(num)
@@ -232,6 +238,14 @@ class TableTest < Minitest::Test
     assert_equal(4, t.to_a[1][2])
 
     t.each_row{|r| assert_equal(r['Name'].size, r['NameLength'].to_i)}
+
+    # Set meta data
+    t.add_column('Tax', {format: '0.0%'}){|row| 0.25}
+    assert_equal({format: '0.0%'}, t.metadata['Tax'])
+
+    # Set meta data, verify meta data verification
+    e = assert_raises{ t.add_column('Tax2', {format2: '0.0%'}){|row| 0.25} }
+    assert_equal("Unknown meta data tag 'format2'", e.to_s)
   end
 
   def test_change_column
@@ -330,5 +344,54 @@ class TableTest < Minitest::Test
     t << {'Severity' => :normal, 'Category' => 'T1'} << {'Severity' => :normal, 'Category' => 'T2'}
     assert_equal(7, t.to_a.count)
     assert_equal([[:normal, 'T1'], [:normal, 'T2']], t.to_a[-2,2])
+  end
+
+  def test_metadata
+    t = TableTransform::Table.create_empty(%w(Name Income Dept Tax))
+    t << {'Name' => 'Joe',  'Income' => 500_000,   'Dept' => 43_000,  'Tax' => 0.15}
+    t << {'Name' => 'Jane', 'Income' => 1_300_000, 'Dept' => 180_000, 'Tax' => 0.567}
+
+    t.set_metadata(*%w(Income Tax Dept), {format: '#,##0'})
+
+    # Set and re-set column metadata
+    assert_equal(4, t.metadata.size)
+    assert_equal({},                t.metadata['Name'])
+    assert_equal({format: '#,##0'}, t.metadata['Income'])
+    assert_equal({format: '#,##0'}, t.metadata['Dept'])
+    assert_equal({format: '#,##0'},  t.metadata['Tax'])
+
+    t.set_metadata('Tax', {format: '0.0%'})
+    assert_equal({format: '0.0%'},  t.metadata['Tax'])
+
+    # Delete column
+    t.delete_column('Dept')
+    assert_equal(3, t.metadata.size)
+    assert_equal(nil, t.metadata['Dept'])
+
+    # Extract column
+    t = t.extract(['Name', 'Tax'])
+    assert_equal(2, t.metadata.size)
+    assert_equal({}, t.metadata['Name'])
+    assert_equal({format: '0.0%'}, t.metadata['Tax'])
+
+    # invalid column name
+    e = assert_raises{ t.set_metadata('xxx', 'yyy', {format: 'xxx'}) }
+    assert_equal("No column with name 'xxx' exists", e.to_s)
+
+    # invalid metadata
+    e = assert_raises{ t.set_metadata('Tax', nil) }
+    assert_equal('Metadata must be a hash', e.to_s)
+
+    e = assert_raises{ t.set_metadata('Tax', []) }
+    assert_equal('Metadata must be a hash', e.to_s)
+
+    e = assert_raises{ t.set_metadata('Tax', {format2: 'xxx', format3: 45}) }
+    assert_equal("Unknown meta data tag 'format2'", e.to_s)
+
+    e = assert_raises{ t.set_metadata('Tax', {format: 34}) }
+    assert_equal("Meta tag 'format' expected to be a non-empty string", e.to_s)
+
+    e = assert_raises{ t.set_metadata('Tax', {format: ''}) }
+    assert_equal("Meta tag 'format' expected to be a non-empty string", e.to_s)
   end
 end

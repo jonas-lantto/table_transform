@@ -6,6 +6,8 @@ TableTransform is still in pre-release state. This means that its APIs and behav
 
 ## [Unreleased]
 
+* Added format capability for columns when published as Excel 
+
 ## [0.2.0][] (2016-02-16)
 
 * Added ability to publish Tables in *Microsoft Excel* format
