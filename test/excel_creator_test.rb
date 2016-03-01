@@ -119,4 +119,28 @@ class ExcelCreatorTest < Minitest::Test
     assert_equal('500,000', sheet.formatted_value(2, 'A'))
     assert_equal('1,300,000', sheet.formatted_value(3, 'A'))
   end
+
+  def test_formulas
+    t = TableTransform::Table.create_empty(%w(Name Income))
+    t << {'Name' => 'Joe',  'Income' => 500_000}
+    t << {'Name' => 'Jane', 'Income' => 1_300_000}
+
+    t.add_column_formula('OnePlusOne', '=1+1')
+    t.add_column_formula('One1000One', '=1+1000', {format: '#,##0'})
+
+    # Create Excel
+    excel = TableTransform::ExcelCreator.new(@tmp_filename)
+    excel.add_tab('formula_tab', t)
+    excel.create!
+
+    xlsx = Roo::Excelx.new(@tmp_filename)
+    assert_equal(%w(formula_tab), xlsx.sheets)
+    sheet = xlsx.sheet('formula_tab')
+    assert_equal('1+1', sheet.formula(2, 'C'))
+    assert_equal('1+1', sheet.formula(3, 'C'))
+    assert_equal(nil, sheet.formula(4, 'C'))
+
+    assert_equal('1+1000', sheet.formula(2, 'D'))
+    assert_equal('1+1000', sheet.formula(3, 'D'))
+  end
 end

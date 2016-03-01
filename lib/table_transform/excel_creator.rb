@@ -45,11 +45,13 @@ module TableTransform
       }
     end
 
-    def create_column_metadata(metadata, formats)
+    def create_column_metadata(metadata, formats, formulas)
       res = []
       metadata.each{ |header_name, data|
         data_dup = data.dup
         data_dup[:format] = formats[data_dup[:format]] unless data_dup[:format].nil? #replace str format with excel representation
+        formula = formulas[header_name]
+        data_dup.merge!({formula: formula}) unless formula.nil?
         res << {header: header_name}.merge(data_dup)
       }
       res
@@ -72,7 +74,7 @@ module TableTransform
               :name => name.tr(' ', '_'),
               :data => data,
               :autofilter => auto_filter ? 1 : 0,
-              :columns => create_column_metadata(table.metadata, @formats)
+              :columns => create_column_metadata(table.metadata, @formats, table.formulas)
           }
       )
 
