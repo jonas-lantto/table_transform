@@ -56,6 +56,7 @@ module TableTransform
     def add_column_formula(column, formula, metadata = {})
       add_column(column, metadata){nil}
       @formulas[column] = formula
+      self # self chaining
     end
 
     def << (hash_values)
@@ -114,6 +115,7 @@ module TableTransform
     end
 
     def change_column(name)
+      raise "Column with formula('#{name}') cannot be changed" if @formulas[name]
       index = Util::get_col_index(name, @column_indexes)
       @data_rows.each{|r|
         r[index] = yield Row.new(@column_indexes, r)
