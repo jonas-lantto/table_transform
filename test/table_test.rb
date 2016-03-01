@@ -394,4 +394,36 @@ class TableTest < Minitest::Test
     e = assert_raises{ t.set_metadata('Tax', {format: ''}) }
     assert_equal("Meta tag 'format' expected to be a non-empty string", e.to_s)
   end
+
+  def test_formulas
+    t = TableTransform::Table.create_empty(%w(Name Income))
+    t << {'Name' => 'Joe',  'Income' => 500_000}
+    t << {'Name' => 'Jane', 'Income' => 1_300_000}
+
+    assert_equal(0, t.formulas.size)
+
+    # Add formula
+    t.add_column_formula('OnePlusOne', '=1+1')
+    assert_equal(1, t.formulas.size)
+    assert_equal('=1+1', t.formulas['OnePlusOne'])
+
+    # Add formula with format
+    t.add_column_formula('TwoPlusTwo', '=2+2', {format: '0.0'})
+    assert_equal(2, t.formulas.size)
+    assert_equal('=2+2', t.formulas['TwoPlusTwo'])
+    assert_equal({format: '0.0'},  t.metadata['TwoPlusTwo'])
+
+    # Delete column
+    t.delete_column('OnePlusOne')
+    assert_equal(1, t.formulas.size)
+    assert_equal(nil, t.formulas['OnePlusOne'])
+
+    # Extract column
+    t = t.extract(['TwoPlusTwo'])
+    assert_equal(1, t.formulas.size)
+    p t
+    assert_equal('=2+2', t.formulas['TwoPlusTwo'])
+    assert_equal({format: '0.0'},  t.metadata['TwoPlusTwo'])
+
+  end
 end

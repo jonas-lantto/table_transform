@@ -8,6 +8,8 @@ module TableTransform
   end
 
   class Table
+    attr_reader :formulas
+
     def self.create_from_file(file_name, sep = ',')
       rows = CSV.read(file_name, { :col_sep => sep })
       raise "'#{file_name}' contains no data" if rows.empty?
@@ -30,6 +32,7 @@ module TableTransform
       header = @data_rows.shift
       @column_indexes = create_column_name_binding(header)
       @metadata = header.zip( Array.new(header.size){{}} ).to_h
+      @formulas = {}
 
       validate_header_uniqueness(header)
       validate_column_size
@@ -48,6 +51,11 @@ module TableTransform
     # Returns meta data as Hash with header name as key
     def metadata
       @metadata.clone
+    end
+
+    def add_column_formula(column, formula, metadata = {})
+      add_column(column, metadata){nil}
+      @formulas[column] = formula
     end
 
     def << (hash_values)
@@ -83,6 +91,7 @@ module TableTransform
       selected_cols = @column_indexes.values_at(*header)
       t = Table.new( @data_rows.inject([header]) {|res, row| (res << row.values_at(*selected_cols))} )
       t.metadata = t.metadata.keys.zip(@metadata.values_at(*header)).to_h
+      t.formulas = header.zip(@formulas.values_at(*header)).to_h
       t
     end
 
@@ -115,7 +124,10 @@ module TableTransform
 
     def delete_column(*names)
       validate_column_names(*names)
-      names.each{|n| @metadata.delete(n)}
+      names.each{|n|
+        @metadata.delete(n)
+        @formulas.delete(n)
+      }
 
       selected_cols = @column_indexes.values_at(*@metadata.keys)
       @data_rows.map!{|row| row.values_at(*selected_cols)}
@@ -149,6 +161,7 @@ module TableTransform
 
     protected
       attr_writer :metadata
+      attr_writer :formulas
 
     private
       def create_column_name_binding(header_row)
