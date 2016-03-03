@@ -7,25 +7,6 @@ module TableTransform
     end
   end
 
-  class Formula
-    def self.table(name)
-      "#{name}[]"
-    end
-
-    def self.column(name)
-      "[#{name}]"
-    end
-
-    def self.text(txt)
-      "\"#{txt}\""
-    end
-
-    def self.vlookup(search_value, table_name, return_col_name)
-      "VLOOKUP(#{search_value},#{table(table_name)},COLUMN(#{table_name}[[#Headers],#{column(return_col_name)}]),FALSE)"
-    end
-
-  end
-
   class Table
     attr_reader :formulas
 
@@ -157,6 +138,8 @@ module TableTransform
       self
     end
 
+    # Table row
+    # Columns within row can be referenced by name, e.g. row['name']
     class Row
 
       def initialize(cols, row)
@@ -173,6 +156,7 @@ module TableTransform
 
     end
 
+    # Cell within Table::Row
     class Cell < String
       # @returns true if this cell includes any of the given values in list
       def include_any?(list)
