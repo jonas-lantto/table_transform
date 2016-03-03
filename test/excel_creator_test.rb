@@ -125,8 +125,8 @@ class ExcelCreatorTest < Minitest::Test
     t << {'Name' => 'Joe',  'Income' => 500_000}
     t << {'Name' => 'Jane', 'Income' => 1_300_000}
 
-    t.add_column_formula('OnePlusOne', '=1+1')
-    t.add_column_formula('One1000One', '=1+1000', {format: '#,##0'})
+    t.add_column_formula('OnePlusOne', '1+1')
+    t.add_column_formula('One1000One', '1+1000', {format: '#,##0'})
 
     # Create Excel
     excel = TableTransform::ExcelCreator.new(@tmp_filename)

@@ -403,16 +403,16 @@ class TableTest < Minitest::Test
     assert_equal(0, t.formulas.size)
 
     # Add formula
-    t2 = t.add_column_formula('OnePlusOne', '=1+1')
+    t2 = t.add_column_formula('OnePlusOne', '1+1')
     assert_kind_of(TableTransform::Table, t2)
 
     assert_equal(1, t.formulas.size)
-    assert_equal('=1+1', t.formulas['OnePlusOne'])
+    assert_equal('1+1', t.formulas['OnePlusOne'])
 
     # Add formula with format
-    t.add_column_formula('TwoPlusTwo', '=2+2', {format: '0.0'})
+    t.add_column_formula('TwoPlusTwo', '2+2', {format: '0.0'})
     assert_equal(2, t.formulas.size)
-    assert_equal('=2+2', t.formulas['TwoPlusTwo'])
+    assert_equal('2+2', t.formulas['TwoPlusTwo'])
     assert_equal({format: '0.0'},  t.metadata['TwoPlusTwo'])
 
     # Delete column
@@ -423,7 +423,7 @@ class TableTest < Minitest::Test
     # Extract column
     t2 = t.extract(['TwoPlusTwo'])
     assert_equal(1, t2.formulas.size)
-    assert_equal('=2+2', t2.formulas['TwoPlusTwo'])
+    assert_equal('2+2', t2.formulas['TwoPlusTwo'])
     assert_equal({format: '0.0'},  t2.metadata['TwoPlusTwo'])
 
     # Column with formula cannot be changes
@@ -431,7 +431,7 @@ class TableTest < Minitest::Test
     assert_equal("Column with formula('TwoPlusTwo') cannot be changed", e.to_s)
 
     # Column name already exists
-    e = assert_raises{ t.add_column_formula('Name', '=1+1') }
+    e = assert_raises{ t.add_column_formula('Name', '1+1') }
     assert_equal("Column 'Name' already exists", e.to_s)
 
   end
