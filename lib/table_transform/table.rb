@@ -7,6 +7,25 @@ module TableTransform
     end
   end
 
+  class Formula
+    def self.table(name)
+      "#{name}[]"
+    end
+
+    def self.column(name)
+      "[#{name}]"
+    end
+
+    def self.text(txt)
+      "\"#{txt}\""
+    end
+
+    def self.vlookup(search_value, table_name, return_col_name)
+      "VLOOKUP(#{search_value},#{table(table_name)},COLUMN(#{table_name}[[#Headers],#{column(return_col_name)}]),FALSE)"
+    end
+
+  end
+
   class Table
     attr_reader :formulas
 
