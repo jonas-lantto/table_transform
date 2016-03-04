@@ -18,8 +18,15 @@ module TableTransform
     end
 
     # vlookup helper, search for a value in another table with return column specified by name
-    def self.vlookup(search_value, table_name, return_col_name)
-      "VLOOKUP(#{search_value},#{table(table_name)},COLUMN(#{table_name}[[#Headers],#{column(return_col_name)}]),FALSE)"
+    # Use other help functions to create an excel expression
+    #
+    # @param [excel expression] search_value, value to lookup
+    # @param [string]           table_name, name of the table to search in
+    # @param [string]           return_col_name, name of the return column in given table
+    # @param [excel expression] default, value if nothing was found, otherwise Excel will show N/A
+    def self.vlookup(search_value, table_name, return_col_name, default = nil)
+      vlookup = "VLOOKUP(#{search_value},#{table(table_name)},COLUMN(#{table_name}[[#Headers],#{column(return_col_name)}]),FALSE)"
+      default.nil? ? vlookup : "IFNA(#{vlookup},#{default})"
     end
   end
 end
