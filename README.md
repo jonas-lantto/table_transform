@@ -86,6 +86,41 @@ A row can access its values by column name e.g. `row['Name']`
     # Add meta data during add_column
     t.add_column('Tax', {format: '0.0%'}){|row| 0.25}
     
+### Formula
+Formulas can be added to columns. They have to be in US locale. 
+Column values will be nil if inspected
+
+    # Add formula to column
+    t.add_column_formula('OnePlusOne', '1+1')
+
+    # Add formula to column with meta data
+    t.add_column_formula('OnePlusOne', '1+1' {format: '0.0'})
+
+#### Formula helper
+To aid when creating formulas there are a few helpers available
+    
+    f = TableTransform::FormulaHelper # Namespace alias
+    
+    # Column
+    f::column('price') # <=> [price]
+    t.add_column_formula('Total value', "#{f::column('price')}*f::column('volume')}")
+
+    # Table
+    f::table('Table1') # <=> Table1[]
+    
+    # Text (will avoid the clutter of protecting " character)
+    f::text('No') # <=> "No"
+    
+    # VLOOKUP, convenience function to extract values from another table
+    # Finds the street name in table Address for name specified in column Name
+    f::vlookup(f::column('Name'), 'Address', 'Street'))
+    f::vlookup('[Name]', 'Address', 'Street'))
+
+    # Finds the number of pets in Table Pets for name specified in column Name. If name does not exist it defaults to 0
+    f::vlookup(f::column('Name'), 'Pets', 'nPets', 0))
+    f::vlookup('[Name]', 'Pets', 'nPets', 0))
+
+
 ### Publish
     # Export as array
     t.to_a
