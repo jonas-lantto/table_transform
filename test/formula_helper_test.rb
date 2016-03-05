@@ -13,7 +13,7 @@ class FormulaHelperTest < Minitest::Test
       # VLOOKUP
       assert_equal('VLOOKUP([C1],T1[],COLUMN(T1[[#Headers],[R1]]),FALSE)',
                    f::vlookup(f::column('C1'), 'T1', 'R1'))
-      assert_equal('IFNA(VLOOKUP([C1],T1[],COLUMN(T1[[#Headers],[R1]]),FALSE),"None")',
+      assert_equal('IF(ISNA(VLOOKUP([C1],T1[],COLUMN(T1[[#Headers],[R1]]),FALSE)),"None",VLOOKUP([C1],T1[],COLUMN(T1[[#Headers],[R1]]),FALSE))',
                    f::vlookup(f::column('C1'), 'T1', 'R1', f::text('None')))
   end
 end
