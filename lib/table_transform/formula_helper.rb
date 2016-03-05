@@ -25,8 +25,12 @@ module TableTransform
     # @param [string]           return_col_name, name of the return column in given table
     # @param [excel expression] default, value if nothing was found, otherwise Excel will show N/A
     def self.vlookup(search_value, table_name, return_col_name, default = nil)
-      vlookup = "VLOOKUP(#{search_value},#{table(table_name)},COLUMN(#{table_name}[[#Headers],#{column(return_col_name)}]),FALSE)"
-      default.nil? ? vlookup : "IFNA(#{vlookup},#{default})"
+      vlookup = "VLOOKUP(#{search_value},#{table_name}[#Data],COLUMN(#{table_name}[[#Headers],#{column(return_col_name)}]),FALSE)"
+
+      # Workaround
+      # Should be possible to write "IFNA(#{vlookup},#{default})"
+      # but Excel will error with #Name? until formula is updated by hand
+      default.nil? ? vlookup : "IF(ISNA(#{vlookup}),#{default},#{vlookup})"
     end
   end
 end
