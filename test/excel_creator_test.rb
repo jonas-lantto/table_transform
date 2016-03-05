@@ -20,18 +20,26 @@ class ExcelCreatorTest < Minitest::Test
     assert_equal([], TableTransform::ExcelCreator::column_width([], true))
 
     #header and row
-    data = [['AAA', 23],
-            ['BBBB', 4]]
-    assert_equal([6,5], TableTransform::ExcelCreator::column_width(data, true), 'Auto filter correction')
-    assert_equal([4,2], TableTransform::ExcelCreator::column_width(data, false))
+    t = TableTransform::Table.create_empty(%w(Name Income Tax))
+    t << {'Name' => 'Joe',  'Income' => 500000,  'Tax' => 0.15}
+
+    assert_equal([7,9,6], TableTransform::ExcelCreator::column_width(t, true), 'Auto filter correction')
+    assert_equal([4,6,4], TableTransform::ExcelCreator::column_width(t, false))
 
     #maximum header width per column
-    data = [['333', '4444', 55555]]
-    assert_equal([3,4,4], TableTransform::ExcelCreator::column_width(data, false, 4))
+    assert_equal([4,5,4], TableTransform::ExcelCreator::column_width(t, false, 5))
 
-    #different types
-    data = [[12.0, 33.33, nil]]
-    assert_equal([4,5,0], TableTransform::ExcelCreator::column_width(data, false))
+    #nil value
+    t << {'Name' => nil,  'Income' => nil,  'Tax' => nil}
+    assert_equal([4,6,4], TableTransform::ExcelCreator::column_width(t, false))
+
+    #format, simple
+    t.set_metadata('Tax', {format: "???.???"})
+    assert_equal([4,6,7], TableTransform::ExcelCreator::column_width(t, false))
+
+    #format, advanced
+    t.set_metadata('Tax', {format: "[>100][GREEN]#,##0;[<=-100][YELLOW]##,##0;[CYAN]#,##0"})
+    assert_equal([4,6,6], TableTransform::ExcelCreator::column_width(t, false))
   end
 
   def test_excel_create

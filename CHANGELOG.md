@@ -7,6 +7,7 @@ TableTransform is still in pre-release state. This means that its APIs and behav
 ## [Unreleased]
 * Supports formulas in columns
 * Helper functions to create formulas
+* Column width estimates format size in calculation 
 
 ## [0.3.0][] (2016-02-29)
 * Added format capability for columns when published as Excel

@@ -23,13 +23,22 @@ module TableTransform
     #################################
     private
 
+    # estimated column width of format
+    def self.format_column_size(format)
+      return 0 if format.nil?
+      f = format.gsub(/\[.*?\]/, '').split(';')
+      f.map{|x| x.size}.max
+    end
+
     # @return array with column width per column
-    def self.column_width(data, auto_filter_correct = true, max_width = 100)
-      return [] if data.empty?
+    def self.column_width(table, auto_filter_correct = true, max_width = 100)
+      return [] unless table.is_a? TableTransform::Table
+      data = table.to_a
 
       auto_filter_size_correction = auto_filter_correct ? 3 : 0
-
-      res = Array.new(data.first.map { |x| x.to_s.size + auto_filter_size_correction })
+      res = Array.new(data.first.map { |name|
+        [name.to_s.size + auto_filter_size_correction, format_column_size(table.metadata[name][:format])].max
+      })
       data.each { |row|
         row.each_with_index { |cell, column_no|
           res[column_no] = [cell.to_s.size, res[column_no]].max
@@ -63,7 +72,7 @@ module TableTransform
       return if data.nil? or data.empty? # Create empty worksheet if no data
 
       auto_filter = true
-      col_width = ExcelCreator::column_width(data, auto_filter)
+      col_width = ExcelCreator::column_width(table, auto_filter)
 
       header = data.shift
       data << [nil] * header.count if data.empty? # Add extra row if empty
