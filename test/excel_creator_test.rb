@@ -20,18 +20,26 @@ class ExcelCreatorTest < Minitest::Test
     assert_equal([], TableTransform::ExcelCreator::column_width([], true))
 
     #header and row
-    data = [['AAA', 23],
-            ['BBBB', 4]]
-    assert_equal([6,5], TableTransform::ExcelCreator::column_width(data, true), 'Auto filter correction')
-    assert_equal([4,2], TableTransform::ExcelCreator::column_width(data, false))
+    t = TableTransform::Table.create_empty(%w(Name Income Tax))
+    t << {'Name' => 'Joe',  'Income' => 500000,  'Tax' => 0.15}
+
+    assert_equal([7,9,6], TableTransform::ExcelCreator::column_width(t, true), 'Auto filter correction')
+    assert_equal([4,6,4], TableTransform::ExcelCreator::column_width(t, false))
 
     #maximum header width per column
-    data = [['333', '4444', 55555]]
-    assert_equal([3,4,4], TableTransform::ExcelCreator::column_width(data, false, 4))
+    assert_equal([4,5,4], TableTransform::ExcelCreator::column_width(t, false, 5))
 
-    #different types
-    data = [[12.0, 33.33, nil]]
-    assert_equal([4,5,0], TableTransform::ExcelCreator::column_width(data, false))
+    #nil value
+    t << {'Name' => nil,  'Income' => nil,  'Tax' => nil}
+    assert_equal([4,6,4], TableTransform::ExcelCreator::column_width(t, false))
+
+    #format, simple
+    t.set_metadata('Tax', {format: '???.???'})
+    assert_equal([4,6,7], TableTransform::ExcelCreator::column_width(t, false))
+
+    #format, advanced
+    t.set_metadata('Tax', {format: '[>100][GREEN]#,##0;[<=-100][YELLOW]##,##0;[CYAN]#,##0'})
+    assert_equal([4,6,6], TableTransform::ExcelCreator::column_width(t, false))
   end
 
   def test_excel_create
@@ -118,5 +126,29 @@ class ExcelCreatorTest < Minitest::Test
     sheet = xlsx.sheet('format_tab_select')
     assert_equal('500,000', sheet.formatted_value(2, 'A'))
     assert_equal('1,300,000', sheet.formatted_value(3, 'A'))
+  end
+
+  def test_formulas
+    t = TableTransform::Table.create_empty(%w(Name Income))
+    t << {'Name' => 'Joe',  'Income' => 500_000}
+    t << {'Name' => 'Jane', 'Income' => 1_300_000}
+
+    t.add_column_formula('OnePlusOne', '1+1')
+    t.add_column_formula('One1000One', '1+1000', {format: '#,##0'})
+
+    # Create Excel
+    excel = TableTransform::ExcelCreator.new(@tmp_filename)
+    excel.add_tab('formula_tab', t)
+    excel.create!
+
+    xlsx = Roo::Excelx.new(@tmp_filename)
+    assert_equal(%w(formula_tab), xlsx.sheets)
+    sheet = xlsx.sheet('formula_tab')
+    assert_equal('1+1', sheet.formula(2, 'C'))
+    assert_equal('1+1', sheet.formula(3, 'C'))
+    assert_equal(nil, sheet.formula(4, 'C'))
+
+    assert_equal('1+1000', sheet.formula(2, 'D'))
+    assert_equal('1+1000', sheet.formula(3, 'D'))
   end
 end

@@ -240,11 +240,11 @@ class TableTest < Minitest::Test
     t.each_row{|r| assert_equal(r['Name'].size, r['NameLength'].to_i)}
 
     # Set meta data
-    t.add_column('Tax', {format: '0.0%'}){|row| 0.25}
+    t.add_column('Tax', {format: '0.0%'}){ 0.25 }
     assert_equal({format: '0.0%'}, t.metadata['Tax'])
 
     # Set meta data, verify meta data verification
-    e = assert_raises{ t.add_column('Tax2', {format2: '0.0%'}){|row| 0.25} }
+    e = assert_raises{ t.add_column('Tax2', {format2: '0.0%'}){ 0.25 } }
     assert_equal("Unknown meta data tag 'format2'", e.to_s)
   end
 
@@ -369,7 +369,7 @@ class TableTest < Minitest::Test
     assert_equal(nil, t.metadata['Dept'])
 
     # Extract column
-    t = t.extract(['Name', 'Tax'])
+    t = t.extract(%w(Name Tax))
     assert_equal(2, t.metadata.size)
     assert_equal({}, t.metadata['Name'])
     assert_equal({format: '0.0%'}, t.metadata['Tax'])
@@ -393,5 +393,46 @@ class TableTest < Minitest::Test
 
     e = assert_raises{ t.set_metadata('Tax', {format: ''}) }
     assert_equal("Meta tag 'format' expected to be a non-empty string", e.to_s)
+  end
+
+  def test_formulas
+    t = TableTransform::Table.create_empty(%w(Name Income))
+    t << {'Name' => 'Joe',  'Income' => 500_000}
+    t << {'Name' => 'Jane', 'Income' => 1_300_000}
+
+    assert_equal(0, t.formulas.size)
+
+    # Add formula
+    t2 = t.add_column_formula('OnePlusOne', '1+1')
+    assert_kind_of(TableTransform::Table, t2)
+
+    assert_equal(1, t.formulas.size)
+    assert_equal('1+1', t.formulas['OnePlusOne'])
+
+    # Add formula with format
+    t.add_column_formula('TwoPlusTwo', '2+2', {format: '0.0'})
+    assert_equal(2, t.formulas.size)
+    assert_equal('2+2', t.formulas['TwoPlusTwo'])
+    assert_equal({format: '0.0'},  t.metadata['TwoPlusTwo'])
+
+    # Delete column
+    t.delete_column('OnePlusOne')
+    assert_equal(1, t.formulas.size)
+    assert_equal(nil, t.formulas['OnePlusOne'])
+
+    # Extract column
+    t2 = t.extract(['TwoPlusTwo'])
+    assert_equal(1, t2.formulas.size)
+    assert_equal('2+2', t2.formulas['TwoPlusTwo'])
+    assert_equal({format: '0.0'},  t2.metadata['TwoPlusTwo'])
+
+    # Column with formula cannot be changes
+    e = assert_raises{ t.change_column('TwoPlusTwo'){ 1 } }
+    assert_equal("Column with formula('TwoPlusTwo') cannot be changed", e.to_s)
+
+    # Column name already exists
+    e = assert_raises{ t.add_column_formula('Name', '1+1') }
+    assert_equal("Column 'Name' already exists", e.to_s)
+
   end
 end
