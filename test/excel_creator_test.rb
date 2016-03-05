@@ -34,11 +34,11 @@ class ExcelCreatorTest < Minitest::Test
     assert_equal([4,6,4], TableTransform::ExcelCreator::column_width(t, false))
 
     #format, simple
-    t.set_metadata('Tax', {format: "???.???"})
+    t.set_metadata('Tax', {format: '???.???'})
     assert_equal([4,6,7], TableTransform::ExcelCreator::column_width(t, false))
 
     #format, advanced
-    t.set_metadata('Tax', {format: "[>100][GREEN]#,##0;[<=-100][YELLOW]##,##0;[CYAN]#,##0"})
+    t.set_metadata('Tax', {format: '[>100][GREEN]#,##0;[<=-100][YELLOW]##,##0;[CYAN]#,##0'})
     assert_equal([4,6,6], TableTransform::ExcelCreator::column_width(t, false))
   end
 

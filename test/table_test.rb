@@ -240,11 +240,11 @@ class TableTest < Minitest::Test
     t.each_row{|r| assert_equal(r['Name'].size, r['NameLength'].to_i)}
 
     # Set meta data
-    t.add_column('Tax', {format: '0.0%'}){|row| 0.25}
+    t.add_column('Tax', {format: '0.0%'}){ 0.25 }
     assert_equal({format: '0.0%'}, t.metadata['Tax'])
 
     # Set meta data, verify meta data verification
-    e = assert_raises{ t.add_column('Tax2', {format2: '0.0%'}){|row| 0.25} }
+    e = assert_raises{ t.add_column('Tax2', {format2: '0.0%'}){ 0.25 } }
     assert_equal("Unknown meta data tag 'format2'", e.to_s)
   end
 
@@ -369,7 +369,7 @@ class TableTest < Minitest::Test
     assert_equal(nil, t.metadata['Dept'])
 
     # Extract column
-    t = t.extract(['Name', 'Tax'])
+    t = t.extract(%w(Name Tax))
     assert_equal(2, t.metadata.size)
     assert_equal({}, t.metadata['Name'])
     assert_equal({format: '0.0%'}, t.metadata['Tax'])
