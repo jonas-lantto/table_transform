@@ -433,6 +433,40 @@ class TableTest < Minitest::Test
     # Column name already exists
     e = assert_raises{ t.add_column_formula('Name', '1+1') }
     assert_equal("Column 'Name' already exists", e.to_s)
+  end
+
+  def test_table_properties
+    # Properties must be a Hash
+    e = assert_raises{ TableTransform::Table::TableProperties.new([]) }
+    assert_equal('Default properties must be a hash', e.to_s)
+
+    # Property :name validation
+    tp = TableTransform::Table::TableProperties.new({name: 'Table1'})
+    assert_equal('Table1', tp[:name])
+
+    e = assert_raises{ TableTransform::Table::TableProperties.new({name: 1}) }
+    assert_equal("Table property 'name' expected to be a non-empty string", e.to_s)
+
+    e = assert_raises{ TableTransform::Table::TableProperties.new({name: ''}) }
+    assert_equal("Table property 'name' expected to be a non-empty string", e.to_s)
+
+    e = assert_raises{ TableTransform::Table::TableProperties.new({name: nil}) }
+    assert_equal("Table property 'name' expected to be a non-empty string", e.to_s)
+
+    # Property :auto_filter validation
+    tp = TableTransform::Table::TableProperties.new({auto_filter: true})
+    assert_equal(true, tp[:auto_filter])
+
+    e = assert_raises{ TableTransform::Table::TableProperties.new({auto_filter: 1}) }
+    assert_equal("Table property 'auto_filter' expected to be a boolean", e.to_s)
+
+    e = assert_raises{ TableTransform::Table::TableProperties.new({auto_filter: nil}) }
+    assert_equal("Table property 'auto_filter' expected to be a boolean", e.to_s)
+
+
+    # Properties validation will require key to exist
+    e = assert_raises{ TableTransform::Table::TableProperties.new({xxx: 1}) }
+    assert_equal("Table property unknown 'xxx'", e.to_s)
 
   end
 end

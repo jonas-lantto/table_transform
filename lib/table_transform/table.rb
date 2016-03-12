@@ -1,4 +1,5 @@
 require 'csv'
+require_relative 'properties'
 
 module TableTransform
   module Util
@@ -163,6 +164,24 @@ module TableTransform
         list.inject(false){|res, x| res | (self.include? x)}
       end
     end
+
+    # Table properties
+    class TableProperties < TableTransform::Properties
+      def validate(properties)
+        super
+        properties.each { |k, v|
+          case k
+            when :name
+              raise "Table property '#{k}' expected to be a non-empty string" unless v.is_a?(String) && !v.empty?
+            when :auto_filter
+              raise "Table property '#{k}' expected to be a boolean" unless !!v == v
+            else
+              raise "Table property unknown '#{k}'"
+          end
+        }
+      end
+    end
+
 
     protected
       attr_writer :metadata
