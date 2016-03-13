@@ -10,6 +10,7 @@ module TableTransform
 
   class Table
     attr_reader :formulas
+    attr_reader :table_properties
 
     def self.create_from_file(file_name, sep = ',')
       rows = CSV.read(file_name, { :col_sep => sep })
@@ -26,7 +27,7 @@ module TableTransform
 
     # @throws if column names not unique
     # @throws if column size for each row match
-    def initialize(rows)
+    def initialize(rows, table_properties = {})
       raise 'Table required to have at least a header row' if (rows.nil? or rows.empty?)
 
       @data_rows = rows.clone
@@ -34,6 +35,7 @@ module TableTransform
       @column_indexes = create_column_name_binding(header)
       @metadata = header.zip( Array.new(header.size){{}} ).to_h
       @formulas = {}
+      @table_properties = TableProperties.new(table_properties)
 
       validate_header_uniqueness(header)
       validate_column_size
@@ -70,8 +72,9 @@ module TableTransform
     def +(table)
       t2 = table.to_a
       t2_header = t2.shift
-      raise 'Tables cannot be added due to header mismatch' if @metadata.keys != t2_header
-      raise 'Tables cannot be added due to meta data mismatch' if @metadata != table.metadata
+      raise 'Tables cannot be added due to header mismatch' unless @metadata.keys == t2_header
+      raise 'Tables cannot be added due to meta data mismatch' unless @metadata == table.metadata
+      raise 'Tables cannot be added due to table properties mismatch' unless @table_properties.to_h == table.table_properties.to_h
       TableTransform::Table.new(self.to_a + t2)
     end
 
@@ -91,7 +94,7 @@ module TableTransform
     def extract(header)
       validate_column_names(*header)
       selected_cols = @column_indexes.values_at(*header)
-      t = Table.new( @data_rows.inject([header]) {|res, row| (res << row.values_at(*selected_cols))} )
+      t = Table.new( @data_rows.inject([header]) {|res, row| (res << row.values_at(*selected_cols))}, @table_properties.to_h )
       t.metadata = t.metadata.keys.zip(@metadata.values_at(*header)).to_h
       t.formulas = header.zip(@formulas.values_at(*header)).to_h
       t
@@ -99,7 +102,7 @@ module TableTransform
 
     # @returns new table with rows that match given block
     def filter
-      Table.new( @data_rows.select {|row| yield Row.new(@column_indexes, row)}.unshift @metadata.keys.clone )
+      Table.new( (@data_rows.select {|row| yield Row.new(@column_indexes, row)}.unshift @metadata.keys.clone), @table_properties.to_h )
     end
 
     #adds a column with given name to the far right of the table

@@ -436,6 +436,29 @@ class TableTest < Minitest::Test
   end
 
   def test_table_properties
+    # extract
+    t = TableTransform::Table.create_empty(%w(Name Age Length))
+    t.table_properties.update({name: 'Table1'})
+    t2 = t.extract(%w(Length Name))
+    assert_equal({name: 'Table1'}, t2.table_properties.to_h)
+    refute_equal(t.table_properties.object_id, t2.table_properties.object_id)
+
+    # filter
+    t = TableTransform::Table.create_empty(%w(Name Age Length))
+    t.table_properties.update({name: 'Table2'})
+    assert_equal({name: 'Table2'}, t.filter{true}.table_properties.to_h)
+
+    # + operator
+    t = TableTransform::Table.create_empty(%w(Name Age Length))
+    t2 = TableTransform::Table.create_empty(%w(Name Age Length))
+    t2.table_properties.update({name: 'Table3'})
+    e = assert_raises{ t + t2 }
+    assert_equal('Tables cannot be added due to table properties mismatch', e.to_s)
+
+
+  end
+
+  def test_table_properties_validation
     # Properties must be a Hash
     e = assert_raises{ TableTransform::Table::TableProperties.new([]) }
     assert_equal('Default properties must be a hash', e.to_s)
