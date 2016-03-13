@@ -1,20 +1,3 @@
-# column_properties
-# ---
-# initialize(*keys, {default_values}, &validator)
-# @throws if key not present
-# prop.update(*keys, {})
-# prop.delete(*keys, *props)
-# prop.reset(*keys, {})
-#
-# @throws if key already exists
-# props.add_key(key, {})
-#
-# extract(*keys)
-#
-# props[]
-# props.to_h
-#
-
 
 module TableTransform
 
