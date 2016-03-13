@@ -73,6 +73,13 @@ A row can access its values by column name e.g. `row['Name']`
     c = row['Col1']                # c = 'CHECK'
     c.include_any?(%w(AA EC DD)))  # true
 
+### Table properties
+    # Set table name - override default name
+    t.table_properties.update({name: 'Table1'})
+    
+    # Set turn on/off auto filter button
+    t.table_properties.update({auto_filter: false})
+
 ### Meta data    
     # Set format for one column
     t.set_metadata('Tax', {format: '0.0%'})
