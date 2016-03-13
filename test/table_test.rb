@@ -57,6 +57,10 @@ class TableTest < Minitest::Test
     t = TableTransform::Table.create_empty(%w(Col1 Col2))
     assert_equal([%w(Col1 Col2)], t.to_a)
 
+    t = TableTransform::Table.create_empty(%w(Col1 Col2), {name: 'Table1'})
+    assert_equal([%w(Col1 Col2)], t.to_a)
+    assert_equal({name: 'Table1'}, t.table_properties.to_h)
+
     # non-array header
     e = assert_raises{ TableTransform::Table.create_empty('str') }
     assert_equal('Table header need to be array', e.to_s)
@@ -444,14 +448,12 @@ class TableTest < Minitest::Test
     refute_equal(t.table_properties.object_id, t2.table_properties.object_id)
 
     # filter
-    t = TableTransform::Table.create_empty(%w(Name Age Length))
-    t.table_properties.update({name: 'Table2'})
+    t = TableTransform::Table.create_empty(%w(Name Age Length), {name: 'Table2'})
     assert_equal({name: 'Table2'}, t.filter{true}.table_properties.to_h)
 
     # + operator
     t = TableTransform::Table.create_empty(%w(Name Age Length))
-    t2 = TableTransform::Table.create_empty(%w(Name Age Length))
-    t2.table_properties.update({name: 'Table3'})
+    t2 = TableTransform::Table.create_empty(%w(Name Age Length), {name: 'Table3'})
     e = assert_raises{ t + t2 }
     assert_equal('Tables cannot be added due to table properties mismatch', e.to_s)
 

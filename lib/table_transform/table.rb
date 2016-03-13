@@ -19,10 +19,10 @@ module TableTransform
       Table.new(rows)
     end
 
-    def self.create_empty(header)
+    def self.create_empty(header, table_properties = {})
       raise 'Table header need to be array' unless header.is_a? Array
       raise 'Table, No header defined' if header.empty?
-      Table.new([header])
+      Table.new([header], table_properties)
     end
 
     # @throws if column names not unique
