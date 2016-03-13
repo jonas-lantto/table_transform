@@ -23,6 +23,15 @@ module TableTransform
     #################################
     private
 
+    def self.default_properties(table_name)
+      TableTransform::Table::TableProperties.new(
+          {
+              name: table_name.tr(' ', '_'),
+              auto_filter: true
+          }
+      )
+    end
+
     # estimated column width of format
     def self.format_column_size(format)
       return 0 if format.nil?
@@ -71,8 +80,8 @@ module TableTransform
       data = table.to_a
       return if data.nil? or data.empty? # Create empty worksheet if no data
 
-      auto_filter = true
-      col_width = ExcelCreator::column_width(table, auto_filter)
+      properties = ExcelCreator::default_properties(name).update(table.table_properties.to_h)
+      col_width = ExcelCreator::column_width(table, properties[:auto_filter])
 
       header = data.shift
       data << [nil] * header.count if data.empty? # Add extra row if empty
@@ -80,9 +89,9 @@ module TableTransform
       worksheet.add_table(
           0, 0, data.count, header.count - 1,
           {
-              :name => name.tr(' ', '_'),
+              :name => properties[:name],
               :data => data,
-              :autofilter => auto_filter ? 1 : 0,
+              :autofilter => properties[:auto_filter] ? 1 : 0,
               :columns => create_column_metadata(table.metadata, @formats, table.formulas)
           }
       )
