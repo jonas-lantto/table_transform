@@ -1,6 +1,7 @@
 require_relative 'test_helper'
 require 'benchmark'
 require 'table_transform/table'
+require 'yaml'
 
 
 class TableTest < Minitest::Test
@@ -301,6 +302,29 @@ class TableTest < Minitest::Test
 
     e = assert_raises{ t2.delete_column('xxx') }
     assert_equal("No column with name 'xxx' exists", e.to_s)
+  end
+
+  def test_rename_column
+    t = TableTransform::Table.create_empty(%w(Name Decibel Length))
+    t << {'Name' => 'Joe',  'Decibel' => 20, 'Length' => 170}
+    assert_equal([%w(Name Decibel Length),
+                  ['Joe', 20, 170]],
+                 t.to_a)
+    t.set_metadata('Decibel', {format: '###,#'})
+
+    t.rename_column('Decibel', 'SoundLevel')
+    assert_equal([%w(Name SoundLevel Length),
+                  ['Joe', 20, 170]],
+                 t.to_a, 'Order preserved')
+
+    # last line of defence
+    refute_includes(YAML::dump(t), 'Decibel')
+
+    t = TableTransform::Table.create_empty(%w(Name))
+    t.add_column_formula('Decibel', '1+1')
+    t.rename_column('Decibel', 'SoundLevel')
+    refute_includes(YAML::dump(t), 'Decibel')
+
   end
 
   def test_cell

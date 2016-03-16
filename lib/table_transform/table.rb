@@ -142,6 +142,14 @@ module TableTransform
       self
     end
 
+    def rename_column(from, to)
+      # todo validate from
+      # todo validate to
+      @metadata = @metadata.map{|k,v| [k == from ? to : k, v] }.to_h
+      @formulas = @formulas.map{|k,v| [k == from ? to : k, v] }.to_h
+      @column_indexes = create_column_name_binding(@metadata.keys)
+    end
+
     # Table row
     # Columns within row can be referenced by name, e.g. row['name']
     class Row
