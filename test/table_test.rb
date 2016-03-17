@@ -317,14 +317,20 @@ class TableTest < Minitest::Test
                   ['Joe', 20, 170]],
                  t.to_a, 'Order preserved')
 
-    # last line of defence
-    refute_includes(YAML::dump(t), 'Decibel')
+    refute_includes(YAML::dump(t), 'Decibel', 'Should not be a trace of Decibel left')
 
     t = TableTransform::Table.create_empty(%w(Name))
     t.add_column_formula('Decibel', '1+1')
     t.rename_column('Decibel', 'SoundLevel')
     refute_includes(YAML::dump(t), 'Decibel')
 
+    # Validation
+    t = TableTransform::Table.create_empty(%w(Decibel))
+    e = assert_raises{ t.rename_column('xxx', 'SoundLevel') }
+    assert_equal("No column with name 'xxx' exists", e.to_s)
+
+    e = assert_raises{ t.rename_column('Decibel', 'Decibel') }
+    assert_equal("Column 'Decibel' already exists", e.to_s)
   end
 
   def test_cell

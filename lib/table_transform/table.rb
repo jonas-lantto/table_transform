@@ -45,7 +45,7 @@ module TableTransform
     # Example:
     #  set_metadata('Col1', {format: '#,##0'})
     def set_metadata(*columns, metadata)
-      validate_column_names(*columns)
+      validate_column_exist(*columns)
       validate_metadata_tags(metadata)
 
       columns.each{|col| @metadata[col] = metadata.clone}
@@ -92,7 +92,7 @@ module TableTransform
 
     # @returns new table with specified columns specified in given header
     def extract(header)
-      validate_column_names(*header)
+      validate_column_exist(*header)
       selected_cols = @column_indexes.values_at(*header)
       t = Table.new( @data_rows.inject([header]) {|res, row| (res << row.values_at(*selected_cols))}, @table_properties.to_h )
       t.metadata = t.metadata.keys.zip(@metadata.values_at(*header)).to_h
@@ -108,7 +108,7 @@ module TableTransform
     #adds a column with given name to the far right of the table
     #@throws if given column name already exists
     def add_column(name, metadata = {})
-      raise "Column '#{name}' already exists" if @metadata.keys.include?(name)
+      validate_column_absence(name)
       @metadata[name] = {}
       @data_rows.each{|x|
         x << (yield Row.new(@column_indexes, x))
@@ -129,7 +129,7 @@ module TableTransform
     end
 
     def delete_column(*names)
-      validate_column_names(*names)
+      validate_column_exist(*names)
       names.each{|n|
         @metadata.delete(n)
         @formulas.delete(n)
@@ -143,8 +143,9 @@ module TableTransform
     end
 
     def rename_column(from, to)
-      # todo validate from
-      # todo validate to
+      validate_column_exist(from)
+      validate_column_absence(to)
+
       @metadata = @metadata.map{|k,v| [k == from ? to : k, v] }.to_h
       @formulas = @formulas.map{|k,v| [k == from ? to : k, v] }.to_h
       @column_indexes = create_column_name_binding(@metadata.keys)
@@ -218,9 +219,13 @@ module TableTransform
         @data_rows.each_with_index {|x, index| raise "Column size mismatch. On row #{index+1}. Size #{x.size} expected to be #{@metadata.size}" if @metadata.size != x.size}
       end
 
-      def validate_column_names(*names)
+      def validate_column_exist(*names)
         diff = names - @metadata.keys
         raise raise "No column with name '#{diff.first}' exists" if diff.size > 0
+      end
+
+      def validate_column_absence(name)
+        raise "Column '#{name}' already exists" if @metadata.keys.include?(name)
       end
 
       def validate_metadata_tags(metadata)
