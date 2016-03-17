@@ -46,6 +46,9 @@ Or install it yourself as:
     # Will remove given columns. One or several can be specified.
     t.delete_column('Name', 'Address')
     
+    # Rename column
+    r.rename_column('Age', 'Years')
+    
     # Create a new Table with given column in specified order
     t.extract(%w(Length Name))
     
