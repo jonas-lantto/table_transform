@@ -11,6 +11,7 @@ module TableTransform
   class Table
     attr_reader :formulas
     attr_reader :table_properties
+    attr_reader :column_properties
 
     def self.create_from_file(file_name, sep = ',')
       rows = CSV.read(file_name, { :col_sep => sep })
@@ -33,9 +34,10 @@ module TableTransform
       @data_rows = rows.clone
       header = @data_rows.shift
       @column_indexes = create_column_name_binding(header)
-      @metadata = header.zip( Array.new(header.size){{}} ).to_h
       @formulas = {}
       @table_properties = TableProperties.new(table_properties)
+      @column_properties = TableTransform::MultiProperties.new(ColumnProperties)
+      @column_properties.reset(*header,{})
 
       validate_header_uniqueness(header)
       validate_column_size
@@ -46,14 +48,12 @@ module TableTransform
     #  set_metadata('Col1', {format: '#,##0'})
     def set_metadata(*columns, metadata)
       validate_column_exist(*columns)
-      validate_metadata_tags(metadata)
-
-      columns.each{|col| @metadata[col] = metadata.clone}
+      @column_properties.reset(*columns, metadata)
     end
 
     # Returns meta data as Hash with header name as key
     def metadata
-      @metadata.clone
+      @column_properties
     end
 
     def add_column_formula(column, formula, metadata = {})
@@ -72,8 +72,8 @@ module TableTransform
     def +(table)
       t2 = table.to_a
       t2_header = t2.shift
-      raise 'Tables cannot be added due to header mismatch' unless @metadata.keys == t2_header
-      raise 'Tables cannot be added due to meta data mismatch' unless @metadata == table.metadata
+      raise 'Tables cannot be added due to header mismatch' unless @column_properties.keys == t2_header
+      raise 'Tables cannot be added due to meta data mismatch' unless @column_properties == table.column_properties
       raise 'Tables cannot be added due to table properties mismatch' unless @table_properties.to_h == table.table_properties.to_h
       TableTransform::Table.new(self.to_a + t2)
     end
@@ -87,7 +87,7 @@ module TableTransform
     # @returns array of data arrays including header row
     def to_a
       res = @data_rows.clone
-      res.unshift @metadata.keys.clone
+      res.unshift @column_properties.keys.clone
     end
 
     # @returns new table with specified columns specified in given header
@@ -95,26 +95,25 @@ module TableTransform
       validate_column_exist(*header)
       selected_cols = @column_indexes.values_at(*header)
       t = Table.new( @data_rows.inject([header]) {|res, row| (res << row.values_at(*selected_cols))}, @table_properties.to_h )
-      t.metadata = t.metadata.keys.zip(@metadata.values_at(*header)).to_h
+      header.each{|h| t.column_properties.reset(h, @column_properties[h].to_h)}
       t.formulas = header.zip(@formulas.values_at(*header)).to_h
       t
     end
 
     # @returns new table with rows that match given block
     def filter
-      Table.new( (@data_rows.select {|row| yield Row.new(@column_indexes, row)}.unshift @metadata.keys.clone), @table_properties.to_h )
+      Table.new( (@data_rows.select {|row| yield Row.new(@column_indexes, row)}.unshift @column_properties.keys.clone), @table_properties.to_h )
     end
 
     #adds a column with given name to the far right of the table
     #@throws if given column name already exists
     def add_column(name, metadata = {})
       validate_column_absence(name)
-      @metadata[name] = {}
+      @column_properties.reset(name, metadata)
       @data_rows.each{|x|
         x << (yield Row.new(@column_indexes, x))
       }
       @column_indexes[name] = @column_indexes.size
-      set_metadata(name, metadata)
       self # enable chaining
     end
 
@@ -131,14 +130,14 @@ module TableTransform
     def delete_column(*names)
       validate_column_exist(*names)
       names.each{|n|
-        @metadata.delete(n)
+        @column_properties.delete(n)
         @formulas.delete(n)
       }
 
-      selected_cols = @column_indexes.values_at(*@metadata.keys)
+      selected_cols = @column_indexes.values_at(*@column_properties.keys)
       @data_rows.map!{|row| row.values_at(*selected_cols)}
 
-      @column_indexes = create_column_name_binding(@metadata.keys)
+      @column_indexes = create_column_name_binding(@column_properties.keys)
       self
     end
 
@@ -146,9 +145,9 @@ module TableTransform
       validate_column_exist(from)
       validate_column_absence(to)
 
-      @metadata = @metadata.map{|k,v| [k == from ? to : k, v] }.to_h
+      @column_properties.rename_key(from, to)
       @formulas = @formulas.map{|k,v| [k == from ? to : k, v] }.to_h
-      @column_indexes = create_column_name_binding(@metadata.keys)
+      @column_indexes = create_column_name_binding(@column_properties.keys)
     end
 
     # Table row
@@ -194,9 +193,23 @@ module TableTransform
       end
     end
 
+    # Column properties
+    class ColumnProperties < TableTransform::Properties
+      def validate(properties)
+        super
+        properties.each { |k, v|
+          case k
+            when :format
+              raise "Meta tag 'format' expected to be a non-empty string" unless v.is_a?(String) && !v.empty?
+            else
+              raise "Unknown meta data tag '#{k}'"
+          end
+        }
+      end
+    end
+
 
     protected
-      attr_writer :metadata
       attr_writer :formulas
 
     private
@@ -205,7 +218,7 @@ module TableTransform
       end
 
       def create_row(hash_values)
-        @metadata.keys.inject([]) { |row, col| row << hash_values.fetch(col){raise "Value for column '#{col}' could not be found"} }
+        @column_properties.keys.inject([]) { |row, col| row << hash_values.fetch(col){raise "Value for column '#{col}' could not be found"} }
       end
 
       # @throws unless all header names are unique
@@ -216,28 +229,17 @@ module TableTransform
 
       # @throws unless all rows have same number of elements
       def validate_column_size
-        @data_rows.each_with_index {|x, index| raise "Column size mismatch. On row #{index+1}. Size #{x.size} expected to be #{@metadata.size}" if @metadata.size != x.size}
+        @data_rows.each_with_index {|x, index| raise "Column size mismatch. On row #{index+1}. Size #{x.size} expected to be #{@column_properties.size}" if @column_properties.size != x.size}
       end
 
       def validate_column_exist(*names)
-        diff = names - @metadata.keys
+        diff = names - @column_properties.keys
         raise raise "No column with name '#{diff.first}' exists" if diff.size > 0
       end
 
       def validate_column_absence(name)
-        raise "Column '#{name}' already exists" if @metadata.keys.include?(name)
+        raise "Column '#{name}' already exists" if @column_properties.keys.include?(name)
       end
 
-      def validate_metadata_tags(metadata)
-        raise 'Metadata must be a hash' unless metadata.is_a?(Hash)
-        metadata.each { |k, v|
-          case k
-            when :format
-              raise "Meta tag 'format' expected to be a non-empty string" unless v.is_a?(String) && !v.empty?
-            else
-              raise "Unknown meta data tag '#{k}'"
-          end
-        }
-      end
   end
 end

@@ -54,10 +54,7 @@ class PropertiesTest < Minitest::Test
     p = TableTransform::Properties.new({key1: 'value1', :key2 => 2})
     assert_equal('value1', p[:key1])
     assert_equal(2, p[:key2])
-
-    e = assert_raises{ p[:xxx] }
-    assert_equal("Property 'xxx' does not exist", e.to_s)
-
+    assert_equal(nil, p[:xxx])
   end
 
 end

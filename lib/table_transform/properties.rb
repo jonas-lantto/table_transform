@@ -1,7 +1,11 @@
+require 'forwardable'
 
 module TableTransform
 
   class Properties
+    extend Forwardable
+    def_delegators :@props, :delete, :each, :[], :[]=
+
     def initialize(init_properties = {})
       validate(init_properties)
       @props = init_properties
@@ -20,18 +24,47 @@ module TableTransform
       @props.merge! properties
     end
 
-    def delete(prop_key)
-      @props.delete(prop_key)
-    end
-
     def reset(properties)
       validate(properties)
       @props = properties
     end
 
-    def [](prop_key)
-      raise "Property '#{prop_key}' does not exist" unless @props.include? prop_key
-      @props[prop_key]
+  end
+
+  class MultiProperties
+    extend Forwardable
+    def_delegators :@multi_props, :delete, :each, :keys, :size
+
+    def initialize(klass, init_properties = {})
+      k = klass.new(init_properties) # force validation in klass to run
+      @multi_props = Hash.new{|hash, key| hash[key] = klass.new(init_properties.dup)}
+    end
+
+    def to_h
+      @multi_props.clone.to_h
+    end
+
+    def update(*keys, properties)
+      keys.each{|k| @multi_props[k].update(properties)}
+    end
+
+    def reset(*keys, properties)
+      keys.each{|k| @multi_props[k].reset(properties)}
+    end
+
+    def rename_key(from, to)
+      @multi_props = @multi_props.map{|k,v| [k == from ? to : k, v] }.to_h
+    end
+
+    def [](key)
+      return nil unless @multi_props.include? key
+      @multi_props[key].to_h
+    end
+
+    def ==(multi_props)
+      return false unless @multi_props.keys == multi_props.keys
+      @multi_props.each{|k, v| return false unless v.to_h == multi_props[k].to_h }
+      true
     end
   end
 end

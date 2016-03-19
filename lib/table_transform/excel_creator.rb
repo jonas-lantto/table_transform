@@ -66,7 +66,7 @@ module TableTransform
     def create_column_metadata(metadata, formats, formulas)
       res = []
       metadata.each{ |header_name, data|
-        data_dup = data.dup
+        data_dup = data.to_h.dup
         data_dup[:format] = formats[data_dup[:format]] unless data_dup[:format].nil? #replace str format with excel representation
         formula = formulas[header_name]
         data_dup.merge!({formula: formula}) unless formula.nil?
