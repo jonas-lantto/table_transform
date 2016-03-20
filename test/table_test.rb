@@ -408,6 +408,11 @@ class TableTest < Minitest::Test
     assert_equal(2, t.column_properties.size)
     assert_equal({}, t.column_properties['Name'].to_h)
     assert_equal({format: '0.0%'}, t.column_properties['Tax'].to_h)
+  end
+
+  def test_column_properties_validation
+    t = TableTransform::Table.create_empty(%w(Name Income Dept Tax))
+    t.column_properties['Tax'].update({format: '0.0%'})
 
     # invalid column name
     e = assert_raises{ t.column_properties['xxx'].update({format: 'xxx'}) }
@@ -519,16 +524,16 @@ class TableTest < Minitest::Test
     e = assert_raises{ TableTransform::Table::TableProperties.new({auto_filter: nil}) }
     assert_equal("Table property 'auto_filter' expected to be a boolean", e.to_s)
 
-
     # Properties validation will require key to exist
     e = assert_raises{ TableTransform::Table::TableProperties.new({xxx: 1}) }
     assert_equal("Table property unknown 'xxx'", e.to_s)
   end
 
   def test_deprecated
-    t = TableTransform::Table::create_empty(%w(A B C))
+    t = TableTransform::Table::create_empty(%w(A B C D))
     t.set_metadata('B', {format: '###,###'})
-    assert_equal({"A"=>{}, "B"=>{:format=>"###,###"}, "C"=>{}}, t.metadata)
+    t.set_metadata('A', 'C', {format: '###,000'})
+    assert_equal({"A"=>{:format=>"###,000"}, "B"=>{:format=>"###,###"}, "C"=>{:format=>"###,000"}, "D"=>{}}, t.metadata)
   end
 
 end
