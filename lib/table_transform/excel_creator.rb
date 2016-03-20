@@ -88,8 +88,8 @@ module TableTransform
       data = table.to_a
       return if data.nil? or data.empty? # Create empty worksheet if no data
 
-      properties = ExcelCreator::default_properties(name).update(table.table_properties.to_h)
-      col_width = ExcelCreator::column_width(table, properties[:auto_filter])
+      table_properties = ExcelCreator::default_properties(name).update(table.table_properties.to_h)
+      col_width = ExcelCreator::column_width(table, table_properties[:auto_filter])
 
       header = data.shift
       data << [nil] * header.count if data.empty? # Add extra row if empty
@@ -97,9 +97,9 @@ module TableTransform
       worksheet.add_table(
           0, 0, data.count, header.count - 1,
           {
-              :name => properties[:name],
+              :name => table_properties[:name],
               :data => data,
-              :autofilter => properties[:auto_filter] ? 1 : 0,
+              :autofilter => table_properties[:auto_filter] ? 1 : 0,
               :columns => create_column_metadata(table.column_properties, @formats, table.formulas)
           }
       )
