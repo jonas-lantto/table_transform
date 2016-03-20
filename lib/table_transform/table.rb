@@ -36,7 +36,7 @@ module TableTransform
       @column_indexes = create_column_name_binding(header)
       @formulas = {}
       @table_properties = TableProperties.new(table_properties)
-      @column_properties = Hash.new{|hash, key| raise "No column with name '#{key}' exists"}
+      @column_properties = Hash.new{|_hash, key| raise "No column with name '#{key}' exists"}
       create_column_properties(*header,{})
 
       validate_header_uniqueness(header)
@@ -54,11 +54,7 @@ module TableTransform
     # Returns meta data as Hash with header name as key
     def metadata
       warn 'metadata is deprecated. Use column_properties[] instead'
-      res = Hash.new
-      @column_properties.each{|k, v|
-        res.merge! ({k => v.to_h})
-      }
-      res
+      @column_properties.inject({}){|res, (k, v)| res.merge!({k => v.to_h})}
     end
 
     def add_column_formula(column, formula, column_properties = {})
