@@ -250,7 +250,7 @@ class TableTest < Minitest::Test
 
     # Set meta data, verify meta data verification
     e = assert_raises{ t.add_column('Tax2', {format2: '0.0%'}){ 0.25 } }
-    assert_equal("Unknown meta data tag 'format2'", e.to_s)
+    assert_equal("Unknown column property 'format2'", e.to_s)
   end
 
   def test_change_column
@@ -420,13 +420,13 @@ class TableTest < Minitest::Test
     assert_equal('Default properties must be a hash', e.to_s)
 
     e = assert_raises{ t.set_metadata('Tax', {format2: 'xxx', format3: 45}) }
-    assert_equal("Unknown meta data tag 'format2'", e.to_s)
+    assert_equal("Unknown column property 'format2'", e.to_s)
 
     e = assert_raises{ t.set_metadata('Tax', {format: 34}) }
-    assert_equal("Meta tag 'format' expected to be a non-empty string", e.to_s)
+    assert_equal("Column property 'format' expected to be a non-empty string", e.to_s)
 
     e = assert_raises{ t.set_metadata('Tax', {format: ''}) }
-    assert_equal("Meta tag 'format' expected to be a non-empty string", e.to_s)
+    assert_equal("Column property 'format' expected to be a non-empty string", e.to_s)
   end
 
   def test_formulas

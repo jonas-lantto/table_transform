@@ -47,7 +47,6 @@ module TableTransform
     # Example:
     #  set_metadata('Col1', {format: '#,##0'})
     def set_metadata(*columns, metadata)
-      validate_column_exist(*columns)
       columns.each{|c| @column_properties[c].reset(metadata)}
     end
 
@@ -204,9 +203,9 @@ module TableTransform
         properties.each { |k, v|
           case k
             when :format
-              raise "Meta tag 'format' expected to be a non-empty string" unless v.is_a?(String) && !v.empty?
+              raise "Column property 'format' expected to be a non-empty string" unless v.is_a?(String) && !v.empty?
             else
-              raise "Unknown meta data tag '#{k}'"
+              raise "Unknown column property '#{k}'"
           end
         }
       end
