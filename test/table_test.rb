@@ -201,7 +201,7 @@ class TableTest < Minitest::Test
     e = assert_raises{ t1 + t2 }
     assert_equal('Tables cannot be added due to header mismatch', e.to_s)
 
-    #header mismatch - metadata
+    #header mismatch - properties
     t1 = TableTransform::Table.create_empty(%w(Name Age Length))
     t2 = TableTransform::Table.create_empty(%w(Name Age Length))
     t1.column_properties['Age'].update({format: '#,##0'})
@@ -380,7 +380,7 @@ class TableTest < Minitest::Test
     assert_equal([[:normal, 'T1'], [:normal, 'T2']], t.to_a[-2,2])
   end
 
-  def test_metadata
+  def test_column_properties
     t = TableTransform::Table.create_empty(%w(Name Income Dept Tax))
     t << {'Name' => 'Joe',  'Income' => 500_000,   'Dept' => 43_000,  'Tax' => 0.15}
     t << {'Name' => 'Jane', 'Income' => 1_300_000, 'Dept' => 180_000, 'Tax' => 0.567}
@@ -392,7 +392,7 @@ class TableTest < Minitest::Test
     assert_equal({},                t.column_properties['Name'].to_h)
     assert_equal({format: '#,##0'}, t.column_properties['Income'].to_h)
     assert_equal({format: '#,##0'}, t.column_properties['Dept'].to_h)
-    assert_equal({format: '#,##0'},  t.column_properties['Tax'].to_h)
+    assert_equal({format: '#,##0'}, t.column_properties['Tax'].to_h)
 
     t.column_properties['Tax'].update({format: '0.0%'})
     assert_equal({format: '0.0%'},  t.column_properties['Tax'].to_h)
