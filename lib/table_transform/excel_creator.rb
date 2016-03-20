@@ -16,7 +16,7 @@ module TableTransform
     end
 
     def add_tab(name, table)
-      set_formats(table.metadata) if table.is_a?(TableTransform::Table)
+      set_formats(table.column_properties) if table.is_a?(TableTransform::Table)
       create_table(name, table)
     end
 
@@ -46,7 +46,7 @@ module TableTransform
 
       auto_filter_size_correction = auto_filter_correct ? 3 : 0
       res = Array.new(data.first.map { |name|
-        [name.to_s.size + auto_filter_size_correction, format_column_size(table.metadata[name][:format])].max
+        [name.to_s.size + auto_filter_size_correction, format_column_size(table.column_properties[name][:format])].max
       })
       data.each { |row|
         row.each_with_index { |cell, column_no|
@@ -56,21 +56,29 @@ module TableTransform
       res.map! { |x| [x, max_width].min }
     end
 
-    def set_formats(metadata)
-      metadata.each{|_,v|
+    def set_formats(column_properties)
+      # find all :formats across all columns
+      column_properties.each{|_,v|
         f = v[:format]
         @formats[f] ||= @workbook.add_format(:num_format => f) unless f.nil?
       }
     end
 
-    def create_column_metadata(metadata, formats, formulas)
+    def create_column_metadata(column_properties, formats, formulas)
       res = []
-      metadata.each{ |header_name, data|
-        data_dup = data.to_h.dup
-        data_dup[:format] = formats[data_dup[:format]] unless data_dup[:format].nil? #replace str format with excel representation
+      column_properties.each{ |header_name, data|
+        col_props = TableTransform::Properties.new data.to_h
+
+        #format (replace str format with excel representation)
+        col_props.update({format: formats[col_props[:format]]}) unless col_props[:format].nil?
+
+        #formula
         formula = formulas[header_name]
-        data_dup.merge!({formula: formula}) unless formula.nil?
-        res << {header: header_name}.merge(data_dup)
+        col_props.update({formula: formula}) unless formula.nil?
+
+        #header
+        col_props.update({header: header_name})
+        res << col_props.to_h
       }
       res
     end
@@ -92,7 +100,7 @@ module TableTransform
               :name => properties[:name],
               :data => data,
               :autofilter => properties[:auto_filter] ? 1 : 0,
-              :columns => create_column_metadata(table.metadata, @formats, table.formulas)
+              :columns => create_column_metadata(table.column_properties, @formats, table.formulas)
           }
       )
 
