@@ -4,7 +4,7 @@ module TableTransform
 
   class Properties
     extend Forwardable
-    def_delegators :@props, :delete, :each, :[], :[]=
+    def_delegators :@props, :delete, :each, :[]
 
     def initialize(init_properties = {})
       validate(init_properties)
