@@ -246,7 +246,7 @@ class TableTest < Minitest::Test
 
     # Set meta data
     t.add_column('Tax', {format: '0.0%'}){ 0.25 }
-    assert_equal({format: '0.0%'}, t.metadata['Tax'].to_h)
+    assert_equal({format: '0.0%'}, t.column_properties['Tax'].to_h)
 
     # Set meta data, verify meta data verification
     e = assert_raises{ t.add_column('Tax2', {format2: '0.0%'}){ 0.25 } }
@@ -387,32 +387,33 @@ class TableTest < Minitest::Test
 
     %w(Income Tax Dept).each{|k| t.column_properties[k].update({format: '#,##0'})}
 
-    # Set and re-set column metadata
-    assert_equal(4, t.metadata.size)
-    assert_equal({},                t.metadata['Name'])
-    assert_equal({format: '#,##0'}, t.metadata['Income'])
-    assert_equal({format: '#,##0'}, t.metadata['Dept'])
-    assert_equal({format: '#,##0'},  t.metadata['Tax'])
+    # Set and re-set column properties
+    assert_equal(4, t.column_properties.size)
+    assert_equal({},                t.column_properties['Name'].to_h)
+    assert_equal({format: '#,##0'}, t.column_properties['Income'].to_h)
+    assert_equal({format: '#,##0'}, t.column_properties['Dept'].to_h)
+    assert_equal({format: '#,##0'},  t.column_properties['Tax'].to_h)
 
     t.column_properties['Tax'].update({format: '0.0%'})
-    assert_equal({format: '0.0%'},  t.metadata['Tax'])
+    assert_equal({format: '0.0%'},  t.column_properties['Tax'].to_h)
 
     # Delete column
     t.delete_column('Dept')
-    assert_equal(3, t.metadata.size)
-    assert_equal(nil, t.metadata['Dept'])
+    assert_equal(3, t.column_properties.size)
+    e = assert_raises{ t.column_properties['Dept'] }
+    assert_equal("No column with name 'Dept' exists", e.to_s)
 
     # Extract column
     t = t.extract(%w(Name Tax))
-    assert_equal(2, t.metadata.size)
-    assert_equal({}, t.metadata['Name'])
-    assert_equal({format: '0.0%'}, t.metadata['Tax'])
+    assert_equal(2, t.column_properties.size)
+    assert_equal({}, t.column_properties['Name'].to_h)
+    assert_equal({format: '0.0%'}, t.column_properties['Tax'].to_h)
 
     # invalid column name
     e = assert_raises{ t.column_properties['xxx'].update({format: 'xxx'}) }
     assert_equal("No column with name 'xxx' exists", e.to_s)
 
-    # invalid metadata
+    # invalid properties
     e = assert_raises{ t.column_properties['Tax'].update(nil) }
     assert_equal('Default properties must be a hash', e.to_s)
 
@@ -447,7 +448,7 @@ class TableTest < Minitest::Test
     t.add_column_formula('TwoPlusTwo', '2+2', {format: '0.0'})
     assert_equal(2, t.formulas.size)
     assert_equal('2+2', t.formulas['TwoPlusTwo'])
-    assert_equal({format: '0.0'},  t.metadata['TwoPlusTwo'])
+    assert_equal({format: '0.0'},  t.column_properties['TwoPlusTwo'].to_h)
 
     # Delete column
     t.delete_column('OnePlusOne')
@@ -458,7 +459,7 @@ class TableTest < Minitest::Test
     t2 = t.extract(['TwoPlusTwo'])
     assert_equal(1, t2.formulas.size)
     assert_equal('2+2', t2.formulas['TwoPlusTwo'])
-    assert_equal({format: '0.0'},  t2.metadata['TwoPlusTwo'])
+    assert_equal({format: '0.0'},  t2.column_properties['TwoPlusTwo'].to_h)
 
     # Column with formula cannot be changes
     e = assert_raises{ t.change_column('TwoPlusTwo'){ 1 } }
@@ -522,6 +523,12 @@ class TableTest < Minitest::Test
     # Properties validation will require key to exist
     e = assert_raises{ TableTransform::Table::TableProperties.new({xxx: 1}) }
     assert_equal("Table property unknown 'xxx'", e.to_s)
-
   end
+
+  def test_deprecated
+    t = TableTransform::Table::create_empty(%w(A B C))
+    t.set_metadata('B', {format: '###,###'})
+    assert_equal({"A"=>{}, "B"=>{:format=>"###,###"}, "C"=>{}}, t.metadata)
+  end
+
 end

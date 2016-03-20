@@ -151,9 +151,4 @@ class ExcelCreatorTest < Minitest::Test
     assert_equal('1+1000', sheet.formula(2, 'D'))
     assert_equal('1+1000', sheet.formula(3, 'D'))
   end
-
-  def test_deprecated
-    t = TableTransform::Table::create_empty(%w(A B C))
-    t.set_metadata('B', {format: '###,###'})
-  end
 end

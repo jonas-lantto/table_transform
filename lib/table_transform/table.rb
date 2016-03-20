@@ -53,6 +53,7 @@ module TableTransform
 
     # Returns meta data as Hash with header name as key
     def metadata
+      warn 'metadata is deprecated. Use column_properties[] instead'
       res = Hash.new
       @column_properties.each{|k, v|
         res.merge! ({k => v.to_h})
@@ -77,7 +78,7 @@ module TableTransform
       t2 = table.to_a
       t2_header = t2.shift
       raise 'Tables cannot be added due to header mismatch' unless @column_properties.keys == t2_header
-      raise 'Tables cannot be added due to column properties mismatch' unless metadata == table.metadata
+      raise 'Tables cannot be added due to column properties mismatch' unless column_properties_eql? table.column_properties
       raise 'Tables cannot be added due to table properties mismatch' unless @table_properties.to_h == table.table_properties.to_h
       TableTransform::Table.new(self.to_a + t2)
     end
@@ -227,6 +228,11 @@ module TableTransform
 
       def create_column_properties(*header, properties)
         header.each{|key| @column_properties.store(key, TableTransform::Table::ColumnProperties.new(properties))}
+      end
+
+      def column_properties_eql?(column_properties)
+          return false unless @column_properties.size == column_properties.size
+          @column_properties.each{|key, prop| return false unless prop.to_h == column_properties[key].to_h}
       end
 
       # @throws unless all header names are unique
