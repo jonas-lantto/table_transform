@@ -34,11 +34,11 @@ class ExcelCreatorTest < Minitest::Test
     assert_equal([4,6,4], TableTransform::ExcelCreator::column_width(t, false))
 
     #format, simple
-    t.set_metadata('Tax', {format: '???.???'})
+    t.column_properties['Tax'].update({format: '???.???'})
     assert_equal([4,6,7], TableTransform::ExcelCreator::column_width(t, false))
 
     #format, advanced
-    t.set_metadata('Tax', {format: '[>100][GREEN]#,##0;[<=-100][YELLOW]##,##0;[CYAN]#,##0'})
+    t.column_properties['Tax'].update({format: '[>100][GREEN]#,##0;[<=-100][YELLOW]##,##0;[CYAN]#,##0'})
     assert_equal([4,6,6], TableTransform::ExcelCreator::column_width(t, false))
   end
 
@@ -95,8 +95,8 @@ class ExcelCreatorTest < Minitest::Test
     t << {'Name' => 'Joe',  'Income' => 500_000,   'Dept' => 43_000,  'Tax' => 0.15}
     t << {'Name' => 'Jane', 'Income' => 1_300_000, 'Dept' => 180_000, 'Tax' => 0.5672}
 
-    t.set_metadata(*%w(Income Tax Dept), {format: '#,##0'})
-    t.set_metadata('Tax', {format: '0.00%'})
+    %w(Income Tax Dept).each{|k| t.column_properties[k].update({format: '#,##0'})}
+    t.column_properties['Tax'].update({format: '0.00%'})
 
     excel = TableTransform::ExcelCreator.new(@tmp_filename)
     excel.add_tab('format_tab', t)
@@ -150,5 +150,10 @@ class ExcelCreatorTest < Minitest::Test
 
     assert_equal('1+1000', sheet.formula(2, 'D'))
     assert_equal('1+1000', sheet.formula(3, 'D'))
+  end
+
+  def test_deprecated
+    t = TableTransform::Table::create_empty(%w(A B C))
+    t.set_metadata('B', {format: '###,###'})
   end
 end

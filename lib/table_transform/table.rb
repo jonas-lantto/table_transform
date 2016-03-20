@@ -47,6 +47,7 @@ module TableTransform
     # Example:
     #  set_metadata('Col1', {format: '#,##0'})
     def set_metadata(*columns, metadata)
+      warn 'set_metadata is deprecated. Use column_properties[] instead'
       columns.each{|c| @column_properties[c].reset(metadata)}
     end
 

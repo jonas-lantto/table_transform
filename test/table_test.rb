@@ -204,7 +204,7 @@ class TableTest < Minitest::Test
     #header mismatch - metadata
     t1 = TableTransform::Table.create_empty(%w(Name Age Length))
     t2 = TableTransform::Table.create_empty(%w(Name Age Length))
-    t1.set_metadata('Age', {format: '#,##0'})
+    t1.column_properties['Age'].update({format: '#,##0'})
     e = assert_raises{ t1 + t2 }
     assert_equal('Tables cannot be added due to column properties mismatch', e.to_s)
   end
@@ -310,7 +310,7 @@ class TableTest < Minitest::Test
     assert_equal([%w(Name Decibel Length),
                   ['Joe', 20, 170]],
                  t.to_a)
-    t.set_metadata('Decibel', {format: '###,#'})
+    t.column_properties['Decibel'].update({format: '###,#'})
 
     t.rename_column('Decibel', 'SoundLevel')
     assert_equal([%w(Name SoundLevel Length),
@@ -385,7 +385,7 @@ class TableTest < Minitest::Test
     t << {'Name' => 'Joe',  'Income' => 500_000,   'Dept' => 43_000,  'Tax' => 0.15}
     t << {'Name' => 'Jane', 'Income' => 1_300_000, 'Dept' => 180_000, 'Tax' => 0.567}
 
-    t.set_metadata(*%w(Income Tax Dept), {format: '#,##0'})
+    %w(Income Tax Dept).each{|k| t.column_properties[k].update({format: '#,##0'})}
 
     # Set and re-set column metadata
     assert_equal(4, t.metadata.size)
@@ -394,7 +394,7 @@ class TableTest < Minitest::Test
     assert_equal({format: '#,##0'}, t.metadata['Dept'])
     assert_equal({format: '#,##0'},  t.metadata['Tax'])
 
-    t.set_metadata('Tax', {format: '0.0%'})
+    t.column_properties['Tax'].update({format: '0.0%'})
     assert_equal({format: '0.0%'},  t.metadata['Tax'])
 
     # Delete column
@@ -413,19 +413,19 @@ class TableTest < Minitest::Test
     assert_equal("No column with name 'xxx' exists", e.to_s)
 
     # invalid metadata
-    e = assert_raises{ t.set_metadata('Tax', nil) }
+    e = assert_raises{ t.column_properties['Tax'].update(nil) }
     assert_equal('Default properties must be a hash', e.to_s)
 
-    e = assert_raises{ t.set_metadata('Tax', []) }
+    e = assert_raises{ t.column_properties['Tax'].update([]) }
     assert_equal('Default properties must be a hash', e.to_s)
 
-    e = assert_raises{ t.set_metadata('Tax', {format2: 'xxx', format3: 45}) }
+    e = assert_raises{ t.column_properties['Tax'].update({format2: 'xxx', format3: 45}) }
     assert_equal("Unknown column property 'format2'", e.to_s)
 
-    e = assert_raises{ t.set_metadata('Tax', {format: 34}) }
+    e = assert_raises{ t.column_properties['Tax'].update({format: 34}) }
     assert_equal("Column property 'format' expected to be a non-empty string", e.to_s)
 
-    e = assert_raises{ t.set_metadata('Tax', {format: ''}) }
+    e = assert_raises{ t.column_properties['Tax'].update({format: ''}) }
     assert_equal("Column property 'format' expected to be a non-empty string", e.to_s)
   end
 

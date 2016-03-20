@@ -28,9 +28,18 @@ class PropertiesTest < Minitest::Test
     p.update({key1: 'value1b', key2: 'value2'})
     assert_equal({:key1 => 'value1b', :key2 => 'value2'}, p.to_h)
 
+    # Update empty and nothing changes
     p = TableTransform::Properties.new({key1: 'value1'})
     p.update({})
     assert_equal({:key1 => 'value1'}, p.to_h)
+
+    # Make sure properties are individual instances
+    k3 = {key3: 'value3'}
+    p1 = TableTransform::Properties.new(k3)
+    p2 = TableTransform::Properties.new(k3)
+    p1.update({key3: 'value3a'})
+    assert_equal({:key3 => 'value3a'}, p1.to_h)
+    assert_equal({:key3 => 'value3'}, p2.to_h)
   end
 
   def test_delete

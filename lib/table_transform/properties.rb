@@ -8,7 +8,7 @@ module TableTransform
 
     def initialize(init_properties = {})
       validate(init_properties)
-      @props = init_properties
+      @props = init_properties.clone
     end
 
     def validate(properties)
