@@ -59,8 +59,8 @@ module TableTransform
       res
     end
 
-    def add_column_formula(column, formula, metadata = {})
-      add_column(column, metadata){nil}
+    def add_column_formula(column, formula, column_properties = {})
+      add_column(column, column_properties){nil}
       @formulas[column] = formula
       self # self chaining
     end
@@ -71,12 +71,12 @@ module TableTransform
     end
 
     # Add two tables
-    # @throws if header or meta data do not match
+    # @throws if header or properties do not match
     def +(table)
       t2 = table.to_a
       t2_header = t2.shift
       raise 'Tables cannot be added due to header mismatch' unless @column_properties.keys == t2_header
-      raise 'Tables cannot be added due to meta data mismatch' unless metadata == table.metadata
+      raise 'Tables cannot be added due to column properties mismatch' unless metadata == table.metadata
       raise 'Tables cannot be added due to table properties mismatch' unless @table_properties.to_h == table.table_properties.to_h
       TableTransform::Table.new(self.to_a + t2)
     end
@@ -110,9 +110,9 @@ module TableTransform
 
     #adds a column with given name to the far right of the table
     #@throws if given column name already exists
-    def add_column(name, metadata = {})
+    def add_column(name, column_properties = {})
       validate_column_absence(name)
-      create_column_properties(name, metadata)
+      create_column_properties(name, column_properties)
       @data_rows.each{|x|
         x << (yield Row.new(@column_indexes, x))
       }

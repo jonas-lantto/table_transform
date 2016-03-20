@@ -206,7 +206,7 @@ class TableTest < Minitest::Test
     t2 = TableTransform::Table.create_empty(%w(Name Age Length))
     t1.set_metadata('Age', {format: '#,##0'})
     e = assert_raises{ t1 + t2 }
-    assert_equal('Tables cannot be added due to meta data mismatch', e.to_s)
+    assert_equal('Tables cannot be added due to column properties mismatch', e.to_s)
   end
 
   def numformat(num)
