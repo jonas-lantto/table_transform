@@ -37,11 +37,23 @@ module TableTransform
 
     def initialize(klass, init_properties = {})
       k = klass.new(init_properties) # force validation in klass to run
-      @multi_props = Hash.new{|hash, key| hash[key] = klass.new(init_properties.dup)}
+      @klass = klass
+      #@multi_props = Hash.new{|hash, key| hash[key] = klass.new(init_properties.dup)}
+      @multi_props = Hash.new{|hash, key| raise "No column with name '#{key}' exists"}
+    end
+
+    def create(*keys, properties)
+      keys.each{|k| @multi_props.store(k, @klass.new(properties))}
     end
 
     def to_h
-      @multi_props.clone.to_h
+      #@multi_props.clone.to_h
+      res = Hash.new
+      @multi_props.each{|k, v|
+        res << {k => v.to_h}
+      }
+      p res
+      res
     end
 
     def update(*keys, properties)
@@ -49,7 +61,10 @@ module TableTransform
     end
 
     def reset(*keys, properties)
-      keys.each{|k| @multi_props[k].reset(properties)}
+      keys.each{|k|
+        #@multi_props.store(k, @klass.new(properties)) unless @multi_props.include? k
+        @multi_props[k].reset(properties)
+      }
     end
 
     def rename_key(from, to)

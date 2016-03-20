@@ -37,7 +37,7 @@ module TableTransform
       @formulas = {}
       @table_properties = TableProperties.new(table_properties)
       @column_properties = TableTransform::MultiProperties.new(ColumnProperties)
-      @column_properties.reset(*header,{})
+      @column_properties.create(*header,{})
 
       validate_header_uniqueness(header)
       validate_column_size
@@ -109,7 +109,7 @@ module TableTransform
     #@throws if given column name already exists
     def add_column(name, metadata = {})
       validate_column_absence(name)
-      @column_properties.reset(name, metadata)
+      @column_properties.create(name, metadata)
       @data_rows.each{|x|
         x << (yield Row.new(@column_indexes, x))
       }
