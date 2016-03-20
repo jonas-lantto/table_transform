@@ -76,22 +76,38 @@ A row can access its values by column name e.g. `row['Name']`
     c = row['Col1']                # c = 'CHECK'
     c.include_any?(%w(AA EC DD)))  # true
 
-### Table properties
+### Properties
+There are two categories of properties, Table and Column<br/>
+Same interface for interacting with properties
+    
+    # Update - add or update :name property in existing p
+    p.update({name: 'xxx'})
+    
+    # Reset - resets p with given property, clearing previous properties 
+    p.reset({name: 'xxx'})
+    
+    # Delete
+    p.delete(:name)
+    
+    # Each
+    p.each{|x| ...}
+    
+    # Access
+    p[:name]
+    
+#### Table properties
     # Set table name - override default name
     t.table_properties.update({name: 'Table1'})
     
     # Set turn on/off auto filter button
     t.table_properties.update({auto_filter: false})
 
-### Meta data    
+#### Column properties   
     # Set format for one column
-    t.set_metadata('Tax', {format: '0.0%'})
+    t.column_properties['Tax'].update({format: '0.0%'})
  
-    # Extract metadata
-    t.metadata['Tax'] # {format: '0.0%'}
-
-    # Set format for multiple columns
-    t.set_metadata(*%w(Income Tax Dept), {format: '#,##0'})
+    # Extract properties
+    t.column_properties['Tax'] # {format: '0.0%'}
     
     # Add meta data during add_column
     t.add_column('Tax', {format: '0.0%'}){|row| 0.25}
