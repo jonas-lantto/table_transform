@@ -409,7 +409,7 @@ class TableTest < Minitest::Test
     assert_equal({format: '0.0%'}, t.metadata['Tax'])
 
     # invalid column name
-    e = assert_raises{ t.column_properties.update('xxx', 'yyy', {format: 'xxx'}) }
+    e = assert_raises{ t.column_properties['xxx'].update({format: 'xxx'}) }
     assert_equal("No column with name 'xxx' exists", e.to_s)
 
     # invalid metadata

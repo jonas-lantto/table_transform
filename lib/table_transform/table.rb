@@ -36,8 +36,8 @@ module TableTransform
       @column_indexes = create_column_name_binding(header)
       @formulas = {}
       @table_properties = TableProperties.new(table_properties)
-      @column_properties = TableTransform::MultiProperties.new(ColumnProperties)
-      @column_properties.create(*header,{})
+      @column_properties = Hash.new{|hash, key| raise "No column with name '#{key}' exists"}
+      create_column_properties(*header,{})
 
       validate_header_uniqueness(header)
       validate_column_size
@@ -48,12 +48,16 @@ module TableTransform
     #  set_metadata('Col1', {format: '#,##0'})
     def set_metadata(*columns, metadata)
       validate_column_exist(*columns)
-      @column_properties.reset(*columns, metadata)
+      columns.each{|c| @column_properties[c].reset(metadata)}
     end
 
     # Returns meta data as Hash with header name as key
     def metadata
-      @column_properties
+      res = Hash.new
+      @column_properties.each{|k, v|
+        res.merge! ({k => v.to_h})
+      }
+      res
     end
 
     def add_column_formula(column, formula, metadata = {})
@@ -73,7 +77,7 @@ module TableTransform
       t2 = table.to_a
       t2_header = t2.shift
       raise 'Tables cannot be added due to header mismatch' unless @column_properties.keys == t2_header
-      raise 'Tables cannot be added due to meta data mismatch' unless @column_properties == table.column_properties
+      raise 'Tables cannot be added due to meta data mismatch' unless metadata == table.metadata
       raise 'Tables cannot be added due to table properties mismatch' unless @table_properties.to_h == table.table_properties.to_h
       TableTransform::Table.new(self.to_a + t2)
     end
@@ -95,7 +99,7 @@ module TableTransform
       validate_column_exist(*header)
       selected_cols = @column_indexes.values_at(*header)
       t = Table.new( @data_rows.inject([header]) {|res, row| (res << row.values_at(*selected_cols))}, @table_properties.to_h )
-      header.each{|h| t.column_properties.reset(h, @column_properties[h].to_h)}
+      header.each{|h| t.column_properties[h].reset(@column_properties[h].to_h)}
       t.formulas = header.zip(@formulas.values_at(*header)).to_h
       t
     end
@@ -109,7 +113,7 @@ module TableTransform
     #@throws if given column name already exists
     def add_column(name, metadata = {})
       validate_column_absence(name)
-      @column_properties.create(name, metadata)
+      create_column_properties(name, metadata)
       @data_rows.each{|x|
         x << (yield Row.new(@column_indexes, x))
       }
@@ -145,7 +149,7 @@ module TableTransform
       validate_column_exist(from)
       validate_column_absence(to)
 
-      @column_properties.rename_key(from, to)
+      @column_properties = @column_properties.map{|k,v| [k == from ? to : k, v] }.to_h
       @formulas = @formulas.map{|k,v| [k == from ? to : k, v] }.to_h
       @column_indexes = create_column_name_binding(@column_properties.keys)
     end
@@ -219,6 +223,10 @@ module TableTransform
 
       def create_row(hash_values)
         @column_properties.keys.inject([]) { |row, col| row << hash_values.fetch(col){raise "Value for column '#{col}' could not be found"} }
+      end
+
+      def create_column_properties(*header, properties)
+        header.each{|key| @column_properties.store(key, TableTransform::Table::ColumnProperties.new(properties))}
       end
 
       # @throws unless all header names are unique
