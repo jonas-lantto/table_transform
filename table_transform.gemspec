@@ -21,9 +21,10 @@ Gem::Specification.new do |spec|
 
   spec.required_ruby_version = '>= 2.1'
 
+  spec.add_runtime_dependency     'write_xlsx',               '~> 0.83'
+
   spec.add_development_dependency 'rake',                     '~> 10.0'
   spec.add_development_dependency 'minitest',                 '~> 5.0'
-  spec.add_development_dependency 'write_xlsx',               '~> 0.83'
   spec.add_development_dependency 'roo',                      '~> 2.3'
   spec.add_development_dependency 'codeclimate-test-reporter','~> 0.5.0'
 end
