@@ -120,7 +120,7 @@ Column values will be nil if inspected
     t.add_column_formula('OnePlusOne', '1+1')
 
     # Add formula to column with meta data
-    t.add_column_formula('OnePlusOne', '1+1' {format: '0.0'})
+    t.add_column_formula('OnePlusOne', '1+1', {format: '0.0'})
 
 #### Formula helper
 To aid when creating formulas there are a few helpers available
@@ -129,7 +129,7 @@ To aid when creating formulas there are a few helpers available
     
     # Column
     f::column('price') # <=> [price]
-    t.add_column_formula('Total value', "#{f::column('price')}*f::column('volume')}")
+    t.add_column_formula('Total value', "#{f::column('price')} * #{f::column('volume')}")
 
     # Table
     f::table('Table1') # <=> Table1[]
