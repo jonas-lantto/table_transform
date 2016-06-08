@@ -167,6 +167,11 @@ class TableTest < Minitest::Test
     assert_equal(1, t2.to_a.last.size, 'Only one column')
     assert_equal('Jane', t2.to_a.last[0])
 
+    # Chain formula and filter
+    t3 = t_orig.add_column_formula('OnePlusOne', '1+1').filter{|row| row['Age'].to_i == 45}
+    assert_equal(1, t3.formulas.size)
+    assert_equal('1+1', t3.formulas['OnePlusOne'])
+
     # Columns must exist
     e = assert_raises{ t_orig.filter{|row| row['xxx'] == ''} }
     assert_equal("No column with name 'xxx' exists", e.to_s)

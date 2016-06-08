@@ -103,7 +103,9 @@ module TableTransform
 
     # @returns new table with rows that match given block
     def filter
-      Table.new( (@data_rows.select {|row| yield Row.new(@column_indexes, row)}.unshift @column_properties.keys.clone), @table_properties.to_h )
+      t = Table.new( (@data_rows.select {|row| yield Row.new(@column_indexes, row)}.unshift @column_properties.keys.clone), @table_properties.to_h )
+      t.formulas = @formulas.clone
+      t
     end
 
     #adds a column with given name to the far right of the table
