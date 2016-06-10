@@ -167,10 +167,13 @@ class TableTest < Minitest::Test
     assert_equal(1, t2.to_a.last.size, 'Only one column')
     assert_equal('Jane', t2.to_a.last[0])
 
-    # Chain formula and filter
-    t3 = t_orig.add_column_formula('OnePlusOne', '1+1').filter{|row| row['Age'].to_i == 45}
+    # Formula and column properties remain after filter
+    t3 = t_orig.add_column_formula('OnePlusOne', '1+1')
+    t3.column_properties['Age'].update({format: '#,##0'})
+    t3 = t3.filter{|row| row['Age'].to_i == 45}
     assert_equal(1, t3.formulas.size)
     assert_equal('1+1', t3.formulas['OnePlusOne'])
+    assert_equal({format: '#,##0'}, t3.column_properties['Age'].to_h)
 
     # Columns must exist
     e = assert_raises{ t_orig.filter{|row| row['xxx'] == ''} }
