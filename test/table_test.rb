@@ -150,30 +150,30 @@ class TableTest < Minitest::Test
     t_orig << {'Name' => 'Jane', 'Age' => 45, 'Length' => 172}
     t_orig << {'Name' => 'Anna', 'Age' => 20, 'Length' => 165}
 
-    t2 = t_orig.filter{|row| row['Age'].to_i <= 20}
-    assert_kind_of(TableTransform::Table, t2)
-    assert_equal(3, t2.to_a.size, 'Header row + filtered rows')
-    assert( not(t2.to_a.flatten.include? ('Jane')), 'Value should be filtered out')
-    assert_equal('Anna', t2.to_a.last[0], 'Row order and type preserved')
-    assert_equal(165,    t2.to_a.last[2], 'Row order and type preserved')
+    t = t_orig.filter{|row| row['Age'].to_i <= 20}
+    assert_kind_of(TableTransform::Table, t)
+    assert_equal(3, t.to_a.size, 'Header row + filtered rows')
+    assert( not(t.to_a.flatten.include? ('Jane')), 'Value should be filtered out')
+    assert_equal('Anna', t.to_a.last[0], 'Row order and type preserved')
+    assert_equal(165,    t.to_a.last[2], 'Row order and type preserved')
 
-    t2 = t_orig.filter{ false }
-    assert_equal(1, t2.to_a.size, 'Header row only')
+    t = t_orig.filter{ false }
+    assert_equal(1, t.to_a.size, 'Header row only')
 
     # Chain filter and extract
-    t2 = t_orig.filter{|row| row['Age'].to_i == 45}.extract(%w(Name))
-    assert_kind_of(TableTransform::Table, t2)
-    assert_equal(2, t2.to_a.size, 'Header row + filtered row')
-    assert_equal(1, t2.to_a.last.size, 'Only one column')
-    assert_equal('Jane', t2.to_a.last[0])
+    t = t_orig.filter{|row| row['Age'].to_i == 45}.extract(%w(Name))
+    assert_kind_of(TableTransform::Table, t)
+    assert_equal(2, t.to_a.size, 'Header row + filtered row')
+    assert_equal(1, t.to_a.last.size, 'Only one column')
+    assert_equal('Jane', t.to_a.last[0])
 
     # Formula and column properties remain after filter
-    t3 = t_orig.add_column_formula('OnePlusOne', '1+1')
-    t3.column_properties['Age'].update({format: '#,##0'})
-    t3 = t3.filter{|row| row['Age'].to_i == 45}
-    assert_equal(1, t3.formulas.size)
-    assert_equal('1+1', t3.formulas['OnePlusOne'])
-    assert_equal({format: '#,##0'}, t3.column_properties['Age'].to_h)
+    t = t_orig.add_column_formula('OnePlusOne', '1+1')
+    t.column_properties['Age'].update({format: '#,##0'})
+    t = t.filter{|row| row['Age'].to_i == 45}
+    assert_equal(1, t.formulas.size)
+    assert_equal('1+1', t.formulas['OnePlusOne'])
+    assert_equal({format: '#,##0'}, t.column_properties['Age'].to_h)
 
     # Columns must exist
     e = assert_raises{ t_orig.filter{|row| row['xxx'] == ''} }
