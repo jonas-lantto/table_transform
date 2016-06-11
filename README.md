@@ -50,10 +50,10 @@ Or install it yourself as:
     r.rename_column('Age', 'Years')
     
     # Create a new Table with given column in specified order
-    t.extract(%w(Length Name))
+    t2 = t.extract(%w(Length Name))
     
-    # Filter table 
-    t.filter{|row| row['Age].to_i > 20}
+    # Filter to a new table 
+    t2 = t.filter{|row| row['Age].to_i > 20}
 
     # Adds rows of two tables with same header
     t1 = TableTransform::Table::create_empty(%w(Col1 Col2))
@@ -66,7 +66,8 @@ Or install it yourself as:
 
 #### Table::Row
 `Table::each_row` return a `Table::Row`<br/>
-A row can access its values by column name e.g. `row['Name']`
+A row can access its values by column name e.g. `row['Name']`<br/>
+If column name does not exist (case sensitive) an exception is raised
 
 #### Table:Cell
     # Table::Cell < String
@@ -109,7 +110,7 @@ Same interface for interacting with properties
     # Extract properties
     t.column_properties['Tax'] # {format: '0.0%'}
     
-    # Add meta data during add_column
+    # Add property during add_column
     t.add_column('Tax', {format: '0.0%'}){|row| 0.25}
     
 ### Formula
@@ -128,14 +129,14 @@ To aid when creating formulas there are a few helpers available
     f = TableTransform::FormulaHelper # Namespace alias
     
     # Column
-    f::column('price') # <=> [price]
+    f::column('price') # <=> '[price]'
     t.add_column_formula('Total value', "#{f::column('price')} * #{f::column('volume')}")
 
     # Table
-    f::table('Table1') # <=> Table1[]
+    f::table('Table1') # <=> 'Table1[]'
     
     # Text (will avoid the clutter of protecting " character)
-    f::text('No') # <=> "No"
+    f::text('No') # <=> '"No"'
     
     # VLOOKUP, convenience function to extract values from another table
     # Finds the street name in table Address for name specified in column Name

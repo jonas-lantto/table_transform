@@ -162,7 +162,7 @@ module TableTransform
 
       def initialize(cols, row)
         @cols = cols #column name and index in row
-        @row  = row  #Specific row
+        @row  = row  #Specific row data
       end
 
       # @returns row value with column name or empty string if it does not exist
