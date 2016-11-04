@@ -53,7 +53,7 @@ Or install it yourself as:
     t2 = t.extract(%w(Length Name))
     
     # Filter to a new table 
-    t2 = t.filter{|row| row['Age].to_i > 20}
+    t2 = t.filter{|row| row['Age'].to_i > 20}
 
     # Adds rows of two tables with same header
     t1 = TableTransform::Table::create_empty(%w(Col1 Col2))
